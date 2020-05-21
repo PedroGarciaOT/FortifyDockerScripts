@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 http://maven.apache.org/xsd/settings-1.0.0.xsd">
+
+  <localRepository>/tools/maven/repo</localRepository>
+
+  <pluginGroups>
+	  <pluginGroup>com.fortify.sca.plugins.maven</pluginGroup>
+  </pluginGroups>
+
+  <proxies>
+  </proxies>
+
+  <servers>
+  </servers>
+
+  <mirrors>
+  </mirrors>
+
+  <profiles>
+    <profile>
+      <id>fortify</id>
+      <properties>
+        <fortify.cloudScan.cloudCtrl.url>http://fortify-scancentral:8080/cloud-ctrl</fortify.cloudScan.cloudCtrl.url>
+        <fortify.cloudScan.ssc.url>http://fortify-ssc:8080/ssc</fortify.cloudScan.ssc.url>
+        <fortify.cloudScan.uploadToSSC>true</fortify.cloudScan.uploadToSSC>
+        <fortify.cloudScan.resultsFile>cloudscan-maven.fpr</fortify.cloudScan.resultsFile>
+
+        <fortify.ssc.url>http://fortify-ssc:8080/ssc</fortify.ssc.url>
+        <fortify.sca.resultsFile>sca-maven.fpr</fortify.sca.resultsFile>
+        <fortify.sca.findbugs>false</fortify.sca.findbugs>
+        <!--
+        <fortify.cloudScan.ssc.cloudCtrlToken>0cb4b8b6-6789-4d6d-9b7a-ae0798acb6a0</fortify.cloudScan.ssc.cloudCtrlToken>
+        <fortify.cloudScan.ssc.uploadToken>0cb4b8b6-6789-4d6d-9b7a-ae0798acb6a0</fortify.cloudScan.ssc.uploadToken>
+        
+        <fortify.ssc.authToken>80946465-7559-41e9-a843-54a7d1f4eabe</fortify.ssc.authToken>
+
+        <sonar.host.url>http://demo.mf:9290</sonar.host.url>
+        <sonar.login>3e00dd945f14d55da0d8c16a99f4b8c4c7fddd5d</sonar.login>      
+        -->        
+      </properties>
+    </profile>
+  </profiles>
+
+  <activeProfiles>
+    <activeProfile>fortify</activeProfile>
+  </activeProfiles>  
+
+</settings>

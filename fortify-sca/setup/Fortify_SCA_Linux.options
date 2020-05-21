@@ -1,0 +1,6 @@
+unattendedmodeui=none
+fortify_license_path=work/sca-linux/fortify.license
+installdir=/tools/fortify/sca
+MigrateSCA=0
+InstallSamples=1
+
