@@ -5,7 +5,7 @@ In order to setup a demo/test environment you may follow the steps below
 
 1. Create a new CentOS VM
 2. Remove any existing trace of docker
-''' yum remove docker \
+``` yum remove docker \
                   docker-client \
                   docker-client-latest \
                   docker-common \
@@ -13,7 +13,7 @@ In order to setup a demo/test environment you may follow the steps below
                   docker-latest-logrotate \
                   docker-logrotate \
                   docker-engine
-'''
+```
 3. Update YUM
 ''' yum update -y '''
 4. Set up Docker Repo
