@@ -12,6 +12,9 @@ Files like:
 - jdk-8u251-linux-x64.tar.gz
 - jdk-11.0.7_linux-x64_bin.tar.gz
 
-To build this image use ''' docker build -t pedrogarciamf/fortify-centos:8 . '''
+To build this image use 
+``` 
+docker build -t pedrogarciamf/fortify-centos:8 . 
+```
 
 In case you are planning to use several instances or in case you want to save disk space I recommend flattening the container into a new image. 
