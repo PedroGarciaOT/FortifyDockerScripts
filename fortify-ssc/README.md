@@ -18,15 +18,21 @@ Optionally you can add the following files to be add to the SSC Downloads folder
 - WebInspectAgent_20.1.zip
 
 After starting the container for the first time copy the init.token using 
-''' docker cp fortify-ssc:/home/microfocus/.fortify/ssc/init.token .
+``` 
+docker cp fortify-ssc:/home/microfocus/.fortify/ssc/init.token .
 
 cat init.token && echo 
-'''
+``` 
 
 In case you need the scripts to create the database copy them using
-''' docker cp fortify-ssc:/tools/fortify/sql . '''
+```  
+docker cp fortify-ssc:/tools/fortify/sql . 
+``` 
 
-Is case you are using MySQL the JDBC URL will be something like this ''' jdbc:mysql://fortify-mysql:3306/ssc?connectionCollation=latin1_general_cs&rewriteBatchedStatements=true&useSSL=false '''
+Is case you are using MySQL the JDBC URL will be something like this 
+```  
+jdbc:mysql://fortify-mysql:3306/ssc?connectionCollation=latin1_general_cs&rewriteBatchedStatements=true&useSSL=false 
+``` 
 
 In case you are planning to use several instances or in case you want to save disk space I recommend flattening the container into a new image. 
 
