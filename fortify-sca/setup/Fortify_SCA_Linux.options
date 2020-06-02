@@ -1,6 +1,6 @@
 unattendedmodeui=none
 fortify_license_path=work/sca-linux/fortify.license
 installdir=/tools/fortify/sca
+UpdateServer=http://fortify-ssc:8080/ssc
 MigrateSCA=0
 InstallSamples=1
-

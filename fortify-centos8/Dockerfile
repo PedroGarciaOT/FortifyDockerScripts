@@ -14,12 +14,16 @@ RUN cp colorls.* /etc/profile.d/ && source /etc/profile.d/colorls.sh
 
 RUN mkdir -p /tools/java/jdk-8
 
-RUN tar -pxzf FortifyInstallers/jdk-8u241-linux-x64.tar.gz -C /tools/java/jdk-8 --strip-components=1 && echo "export JAVA_HOME=/tools/java/jdk-8" >> /etc/bashrc && echo "export PATH=\$JAVA_HOME/bin:\$PATH" >> /etc/bashrc && echo "alias ll='ls -laF --color=auto'" >> /etc/bashrc && source /etc/bashrc
+RUN mkdir -p /tools/java/jdk-11
+
+RUN tar -pxzf FortifyInstallers/jdk-8u251-linux-x64.tar.gz -C /tools/java/jdk-8 --strip-components=1 && echo "export JAVA_HOME=/tools/java/jdk-8" >> /etc/bashrc && echo "export PATH=\$JAVA_HOME/bin:\$PATH" >> /etc/bashrc && echo "alias ll='ls -laF --color=auto'" >> /etc/bashrc && source /etc/bashrc
+
+RUN tar -pxzf FortifyInstallers/jdk-11.0.7_linux-x64_bin.tar.gz -C /tools/java/jdk-11 --strip-components=1
 
 RUN chown -R microfocus:microfocus /tools
 
 ENV JAVA_MAJOR=8 \
-    JAVA_VERSION=1.8.0_241 \
+    JAVA_VERSION=1.8.0_251 \
     JAVA_HOME=/tools/java/jdk-8
 
 WORKDIR /home/microfocus

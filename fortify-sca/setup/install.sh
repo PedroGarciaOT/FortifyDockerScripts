@@ -16,8 +16,8 @@ mv fortify.sh /etc/profile.d/
 source /etc/profile.d/fortify.sh
 
 echo "*** Environment Variables " 
-export FORTIFY_MAJOR=19.2.0
-export FORTIFY_SCA_MAJOR=19.2.3
+export FORTIFY_MAJOR=20.1.0
+export FORTIFY_SCA_MAJOR=20.1.0
 
 function install { 
     DEBUG="true"
@@ -31,38 +31,25 @@ function install {
     URL_SCA_LINUX=${URL_SCA_DOWNLOAD_SITE}/${FILE_SCA_LINUX}
     FILE_SCA_LINUX_OPTIONS=${FILE_SCA_LINUX}.options
     URL_SCA_LINUX_OPTIONS=${URL_SCA_DOWNLOAD_SITE}/${FILE_SCA_LINUX_OPTIONS}
-    FILE_JDK11=jdk-11.0.6_linux-x64_bin.tar.gz
-    # http://ftp.unicamp.br/pub/apache/ant/binaries/apache-ant-1.9.14-bin.tar.gz
-    FILE_ANT=apache-ant-1.10.7-bin.tar.gz
-    URL_ANT=http://mirror.nbtelecom.com.br/apache/ant/binaries/${FILE_ANT}
+    FILE_ANT=apache-ant-1.10.8-bin.tar.gz
+    URL_ANT=http://ftp.unicamp.br/pub/apache/ant/binaries/${FILE_ANT}
     FILE_MAVEN=apache-maven-3.6.3-bin.tar.gz
-    URL_MAVEN=http://mirror.nbtelecom.com.br/apache/maven/maven-3/3.6.3/binaries/${FILE_MAVEN}
+    URL_MAVEN=http://ftp.unicamp.br/pub/apache/maven/maven-3/3.6.3/binaries/${FILE_MAVEN}
     GRADLE_VERSION=4.10.2
     FILE_GRADLE=gradle-${GRADLE_VERSION}-bin.zip
     URL_GRADLE=https://downloads.gradle-dn.com/distributions/${FILE_GRADLE}
-    FILE_ANDROID_TOOLS=commandlinetools-linux-6200805_latest.zip
-    URL_ANDROID_TOOLS=https://dl.google.com/android/repository/${FILE_ANDROID_TOOLS}
-
+    
     mkdir -p /home/microfocus/.fortify/
     chown -R microfocus:microfocus /home/microfocus/.fortify/
 
     echo "*** Creating required folders "
-    mkdir -p ${FORTIFY_HOME}
+    mkdir -p ${FORTIFY_SCA_HOME}
     mkdir -p ${ANT_HOME}
     mkdir -p ${MAVEN_HOME}
     mkdir -p ${MAVEN_USER_HOME}
-    mkdir -p ${JDK11_HOME}
-    mkdir -p ${ANDROID_HOME}/platforms
-    mkdir -p ${ANDROID_HOME}/tools/bin
-    mkdir -p ${ANDROID_HOME}/platform-tools
-    mkdir -p /CloudscanWorkdir
+    mkdir -p /ScanCentralWorkdir
     mkdir -p work/sca-linux/
     mkdir -p FortifyInstallers
-
-    if [ -f "FortifyInstallers/${FILE_JDK11}" ]; then
-        tar -pxzf FortifyInstallers/${FILE_JDK11} -C ${JDK11_HOME}/ --strip-components=1
-    fi
-    chown -R microfocus:microfocus ${JDK11_HOME}
 
     if [ ! -f "FortifyInstallers/${FILE_ANT}" ]; then
         echo "*** Downloading ${URL_ANT} "
@@ -91,14 +78,6 @@ function install {
     mv init.gradle ${GRADLE_USER_HOME}/
     chown -R microfocus:microfocus ${GRADLE_HOME}
     chown -R microfocus:microfocus ${GRADLE_USER_HOME}
-
-    if [ ! -f "FortifyInstallers/${FILE_ANDROID_TOOLS}" ]; then
-        echo "*** Downloading ${URL_ANDROID_TOOLS} "
-        wget -q ${URL_ANDROID_TOOLS} -P FortifyInstallers/
-    fi
-    unzip -qq FortifyInstallers/${FILE_ANDROID_TOOLS} -d ${ANDROID_HOME}
-    mv android-packages.txt ${ANDROID_HOME}
-    chown -R microfocus:microfocus ${ANDROID_HOME}
 
     if [ -f "FortifyInstallers/Fortify_SCA_and_Apps_${FORTIFY_SCA_MAJOR}_Linux.tar.gz" ]; then
         echo "*** Extracting FortifyInstallers/Fortify_SCA_and_Apps_${FORTIFY_SCA_MAJOR}_Linux.tar.gz to work/sca-linux/ " 
@@ -132,38 +111,26 @@ function install {
     echo "*** Unattended SCA Installation "
     ./work/sca-linux/${FILE_SCA_LINUX} --mode unattended
 
-    mv cloudscan.properties ${FORTIFY_HOME}/Core/config/
-    mv worker.properties ${FORTIFY_HOME}/Core/config/
-    mv startsensor.sh ${FORTIFY_HOME}/bin/startsensor
-    chmod a+x ${FORTIFY_HOME}/bin/startsensor
+    mv client.properties ${FORTIFY_SCA_HOME}/Core/config/
+    mv worker.properties ${FORTIFY_SCA_HOME}/Core/config/
+    mv startsensor.sh ${FORTIFY_SCA_HOME}/bin/startsensor
+    chmod a+x ${FORTIFY_SCA_HOME}/bin/startsensor
 
     echo "*** Setting ownership o microfocus:microfocus "
-    chown -R microfocus:microfocus ${FORTIFY_HOME}
-    chown -R microfocus:microfocus /CloudscanWorkdir
+    chown -R microfocus:microfocus ${FORTIFY_SCA_HOME}
+    chown -R microfocus:microfocus /ScanCentralWorkdir
 
     echo "*** Updating SCA rulepack "
     fortifyupdate -acceptKey -acceptSSLCertificate -url ${URL_SCA_UPDATE_SITE}
 
     echo "*** Installing Fortify Maven Plugin "
-    cd ${FORTIFY_HOME}/plugins/maven
+    cd ${FORTIFY_SCA_HOME}/plugins/maven
     tar -pxzf maven-plugin-bin.tar.gz
     mkdir src
     tar -pxzf maven-plugin-src.tar.gz -C src
-    cd ${FORTIFY_HOME}/plugins/maven/src
+    cd ${FORTIFY_SCA_HOME}/plugins/maven/src
     mvn clean install
 
-    echo "*** Intalling Android SDK platform-tools."
-    cd ${ANDROID_HOME}/tools/bin
-    yes | sdkmanager --licenses
-    sdkmanager "platform-tools" "ndk-bundle" 
-    
-    if [ -f "${ANDROID_HOME}/android-packages.txt" ]; then 
-        echo "*** Intalling Android SDK packages "
-        cat ${ANDROID_HOME}/android-packages.txt
-        echo "          "
-        sdkmanager --package_file=${ANDROID_HOME}/android-packages.txt
-    fi
-    
     echo "*** Removing unnecessary content "  
     yum clean all
 
@@ -171,4 +138,3 @@ function install {
 }
 
 install > /install.log
-

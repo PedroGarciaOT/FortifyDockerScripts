@@ -37,39 +37,59 @@
 		<constructor-arg name="defaultHandler" ref="fmUrlAuthenticationFailureHandler" />
 	</bean>
 
-	<bean id="usernamePasswordAuthenticationFilter" class="org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter">
+    <!-- Authentication failure handler for SSO scenarios. ToDo SSO should have a different defaultFailureUrl than local login page,
+    more suitable for a SSO authentication scheme, where local login should not be offered.
+    Does not use our custom fmUrlAuthenticationFailureHandler, so that user is not redirected to change password page in
+    case of CredentialsExpiredException. -->
+    <bean id="authenticationFailureHandlerDelegateSso"
+          class="com.fortify.manager.security.auth.AuthenticationFailureHandlerDelegate">
+        <constructor-arg name="handlers">
+            <map>
+                <entry key="/fm-ws/services/**" value-ref="wsAuthenticationFailureHandler"/>
+            </map>
+        </constructor-arg>
+        <constructor-arg name="defaultHandler">
+            <bean class="org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler">
+                <property name="defaultFailureUrl" value="/login.jsp?error=true"/>
+            </bean>
+        </constructor-arg>
+    </bean>
+
+    <bean id="usernamePasswordAuthenticationFilter" class="org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter">
         <property name="usernameParameter" value="j_username" />
         <property name="passwordParameter" value="j_password" />
         <property name="filterProcessesUrl" value="/j_spring_security_check" />
-		<property name="authenticationManager" ref="authenticationManager"/>
+		<property name="authenticationManager" ref="usernamePasswordAuthenticationManager"/>
 		<property name="authenticationFailureHandler" ref="authenticationFailureHandlerDelegate"/>
 		<property name="authenticationSuccessHandler" ref="authenticationSuccessHandlerDelegate"/>
-		<property name="sessionAuthenticationStrategy" ref="concurrentSessionControlStrategy" />
+		<property name="sessionAuthenticationStrategy" ref="concurrentSessionAuthenticationStrategy" />
 	</bean>
 
-	<security:http entry-point-ref="loginUrlAuthenticationEntryPoint">
-	</security:http>
+    <!-- Template intended to be used by all ProviderManager beans - contains Publisher for authentication events -->
+    <bean id="authenticationManagerTemplate" abstract="true">
+        <property name="authenticationEventPublisher">
+            <bean class="org.springframework.security.authentication.DefaultAuthenticationEventPublisher"/>
+        </property>
+    </bean>
 
-
-	<bean id="fmCompositeAuthenticationProvider"  class="com.fortify.manager.web.security.auth.FmCompositeAuthenticationProvider">
-		<constructor-arg name="ldapService" ref="ldapService" />
-		<constructor-arg name="lookupStrategy" value="${user.lookup.strategy}" />
-		<property name="ldapAuthenticationProvider" ref="compositeLdapAuthenticationProvider" />
-		<property name="daoAuthenticationProvider" ref="fmDaoAuthenticationProvider" />
+	<!-- Authentication manager for username+password authentication. Should contain only providers that handle this type of authentication. -->
+	<bean id="usernamePasswordAuthenticationManager" class="org.springframework.security.authentication.ProviderManager"
+		  parent="authenticationManagerTemplate">
+		<constructor-arg>
+			<list>
+				<bean class="com.fortify.manager.web.security.auth.FmKerberosAuthenticationProvider">
+					<property name="kerberosClient" ref="sunJaasKerberosClient"/>
+					<property name="userDetailsService" ref="userDetailsServiceDelegate"/>
+				</bean>
+				<bean class="com.fortify.manager.web.security.auth.FmCompositeAuthenticationProvider">
+					<constructor-arg name="ldapService" ref="ldapService"/>
+					<constructor-arg name="lookupStrategy" value="${user.lookup.strategy}"/>
+					<property name="ldapAuthenticationProvider" ref="compositeLdapAuthenticationProvider"/>
+					<property name="daoAuthenticationProvider" ref="fmDaoAuthenticationProvider"/>
+				</bean>
+			</list>
+		</constructor-arg>
 	</bean>
-	<!-- This is the list of authentication providers to use. Add or remove to it as desired. -->
- 	<security:authentication-manager alias="authenticationManager">
-		<security:authentication-provider ref="httpSsoAuthenticationProvider"/>
-		<security:authentication-provider ref="samlAuthenticationProvider"/>
-        <security:authentication-provider ref="kerberosAuthenticationProvider"/>
-		<security:authentication-provider ref="kerberosServiceAuthenticationProvider"/>
-		<security:authentication-provider ref="x509Provider"/>
-		<security:authentication-provider ref="casAuthenticationProvider"/>
-		<security:authentication-provider ref="tokenAuthenticationProvider" />
-		<security:authentication-provider ref="fmCompositeAuthenticationProvider"/>
-		<security:authentication-provider ref="anonymousAuthenticationProvider"/>
-	</security:authentication-manager>
-
 
 	<bean id="loginUrlAuthenticationEntryPoint" class="org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint">
 		<constructor-arg index="0" value="/login.jsp"/>
@@ -96,25 +116,28 @@
 	<!-- Special handling for file uploads to handle flex's 'special' behavior -->
 	<bean id="filterChainProxy" class="org.springframework.security.web.FilterChainProxy">
 		<security:filter-chain-map request-matcher="ant">
-			<security:filter-chain pattern="/fm-ws/services/**"   filters="concurrentSessionFilter,secCtxPersistenceFilter,spnegoAuthenticationProcessingFilter,casProcessingFilter,changePasswordFilter,fmWebUiAuthenticationMethodSettingFilter,usernamePasswordAuthenticationFilter,x509Filter,anonProcessingFilter,exceptionTranslationFilter,filterInvocationInterceptor"/>
-			<security:filter-chain pattern="/fm-ws/**"                  filters="anonProcessingFilter,exceptionTranslationFilter,filterInvocationInterceptor"/>
-            <security:filter-chain pattern="/upload/**"                 filters="fileExceptionFilter,secCtxTemporaryFilter,paramTokenAuthorization,anonProcessingFilter,fileExceptionTranslationFilter,filterInvocationInterceptor"/>
-            <security:filter-chain pattern="/download/**"               filters="fileExceptionFilter,secCtxTemporaryFilter,paramTokenAuthorization,anonProcessingFilter,fileExceptionTranslationFilter,filterInvocationInterceptor"/>
-            <security:filter-chain pattern="/transfer/**"               filters="fileExceptionFilter,secCtxTemporaryFilter,paramTokenAuthorization,anonProcessingFilter,fileExceptionTranslationFilter,filterInvocationInterceptor"/>
-            <security:filter-chain pattern="/api/v?/${springfox.documentation.swagger.v2.path}" filters="anonProcessingFilter" />
-            <security:filter-chain pattern="/api/v?/auth/*" filters="apiBasicAuthFilter,spnegoAuthenticationProcessingFilter,x509Filter,apiExceptionTranslationFilter,filterInvocationInterceptor" />
+            <security:filter-chain pattern="/fm-ws/services/**"   filters="apiCompositeSessionFilter,ssoCompositeAuthenticationFilter,apiCompositeInterceptorFilter"/>
+            <security:filter-chain pattern="/fm-ws/**"                  filters="apiCompositeInterceptorFilter"/>
+            <security:filter-chain pattern="/upload/**"                 filters="fileCompositeSecurityFilter"/>
+            <security:filter-chain pattern="/download/**"               filters="fileCompositeSecurityFilter"/>
+            <security:filter-chain pattern="/transfer/**"               filters="fileCompositeSecurityFilter"/>
+            <security:filter-chain pattern="/api/v?${springfox.documentation.swagger.v2.path}" filters="anonProcessingFilter" />
+            <security:filter-chain pattern="/api/v?/auth/*" filters="apiCompositeSessionFilter,apiBasicAuthFilter,ssoCompositeAuthenticationFilter,apiCompositeInterceptorFilter"/>
             <!-- .../tokens/** has the same filters as /api/**, but with apiTokenAuthFilter removed to avoid privilege escalation with wrongly defined tokens -->
-            <security:filter-chain pattern="/api/v?/tokens/**"          filters="concurrentSessionFilterNoRedirect,secCtxPersistenceFilter,apiBasicAuthFilter,httpSsoAuthenticationFilter,spnegoAuthenticationProcessingFilter,x509Filter,anonProcessingFilter,apiExceptionTranslationFilter,filterInvocationInterceptor" />
-			<security:filter-chain pattern="/api/**"                    filters="concurrentSessionFilterNoRedirect,secCtxPersistenceFilter,apiTokenAuthFilter,apiBasicAuthFilter,httpSsoAuthenticationFilter,spnegoAuthenticationProcessingFilter,x509Filter,anonProcessingFilter,apiExceptionTranslationFilter,filterInvocationInterceptor" />
-            <security:filter-chain pattern="/useraccess"     filters="anonProcessingFilter,exceptionTranslationFilter,filterInvocationInterceptor"/>
+            <security:filter-chain pattern="/api/v?/tokens/**"          filters="apiCompositeSessionFilter,apiBasicAuthFilter,ssoCompositeAuthenticationFilter,apiCompositeInterceptorFilter"/>
+            <security:filter-chain pattern="/api/v?/license/**" 		filters="apiCompositeSessionFilter,apiTokenAuthFilter,apiBasicAuthFilter,ssoCompositeAuthenticationFilter,apiCompositeInterceptorFilter"/>
+            <security:filter-chain pattern="/api/**"                    filters="apiCompositeSessionFilter,apiTokenAuthFilter,legacyApiBasicAuthFilter,ssoCompositeAuthenticationFilter,apiCompositeInterceptorFilter"/>
+            <security:filter-chain pattern="/useraccess"     filters="apiCompositeInterceptorFilter"/>
 
 			<security:filter-chain pattern="/saml/login/**" filters="samlEntryPoint"/>
 			<security:filter-chain pattern="/saml/logout/**" filters="secCtxPersistenceFilter,samlLogoutFilter"/>
 			<security:filter-chain pattern="/saml/metadata/**" filters="metadataDisplayFilter"/>
-			<security:filter-chain pattern="/saml/SSO/**" filters="concurrentSessionFilterNoRedirect,secCtxPersistenceFilter,samlWebSSOProcessingFilter"/>
-			<security:filter-chain pattern="/saml/SSOHoK/**" filters="concurrentSessionFilterNoRedirect,secCtxPersistenceFilter,samlWebSSOHoKProcessingFilter"/>
+            <security:filter-chain pattern="/saml/SSO/**" filters="apiCompositeSessionFilter,samlWebSSOProcessingFilter"/>
+            <security:filter-chain pattern="/saml/SSOHoK/**" filters="apiCompositeSessionFilter,samlWebSSOHoKProcessingFilter"/>
 			<security:filter-chain pattern="/saml/SingleLogout/**" filters="secCtxPersistenceFilter,samlLogoutProcessingFilter"/>
 			<!--security:filter-chain pattern="/saml/discovery/**" filters="samlIDPDiscovery"/-->
+
+            <security:filter-chain pattern="/login/cas/**" filters="apiCompositeSessionFilter,casSingleLogoutFilter,casProcessingFilter"/>
 
             <!-- do not attempt to login on logout controller endpoint - it will cause issues with already committed response -->
             <security:filter-chain pattern="/optout.html" filters="secCtxPersistenceFilter"/>
@@ -130,7 +153,8 @@
 
 			<!-- keep /login.jsp out of /** filter chain to enable logout for SSO and login screen for local admin in case of SSO -->
 			<security:filter-chain pattern="/login.jsp" filters="anonProcessingFilter" />
-			<security:filter-chain pattern="/**" filters="concurrentSessionFilter,secCtxPersistenceFilter,httpSsoAuthenticationFilter,spnegoAuthenticationProcessingFilter,casProcessingFilter,changePasswordFilter,fmWebUiAuthenticationMethodSettingFilter,usernamePasswordAuthenticationFilter,x509Filter,anonProcessingFilter,exceptionTranslationFilter,filterInvocationInterceptor"/>
+            <security:filter-chain pattern="/j_spring_security_check" filters="webUiCompositeSessionFilter,changePasswordFilter,usernamePasswordAuthenticationFilter,webUiCompositeInterceptorFilter"/>
+            <security:filter-chain pattern="/**" filters="webUiCompositeSessionFilter,ssoCompositeAuthenticationFilter,webUiCompositeInterceptorFilter"/>
 		</security:filter-chain-map>
 	</bean>
 
@@ -165,22 +189,29 @@
 		</constructor-arg>
 	</bean>
 
+	<!-- Provider Manager used for pre-authentication based filters - HTTP SSO and X509 SSO -->
+	<bean id= "preAuthenticatedAuthenticationManager" class="org.springframework.security.authentication.ProviderManager"
+		  parent="authenticationManagerTemplate">
+		<constructor-arg>
+			<bean class="org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationProvider">
+				<property name="preAuthenticatedUserDetailsService">
+					<bean class="org.springframework.security.core.userdetails.UserDetailsByNameServiceWrapper">
+						<property name="userDetailsService" ref="userDetailsServiceDelegate"/>
+					</bean>
+				</property>
+			</bean>
+		</constructor-arg>
+	</bean>
 
 	<!-- HTTP SSO -->
 	<bean id="httpSsoAuthenticationFilter" class="com.fortify.manager.web.security.auth.FmHttpSsoAuthenticationFilter">
-		<constructor-arg name="requiresAuthenticationRequestMatcher" ref="anyRequestMatcher" />
-		<property name="authenticationManager" ref="authenticationManager"/>
+		<property name="authenticationManager" ref="preAuthenticatedAuthenticationManager"/>
 		<property name="authenticationSuccessHandler" ref="authenticationSuccessHandlerDelegate"/>
-		<property name="authenticationFailureHandler" ref="authenticationFailureHandlerDelegate"/>
-		<property name="sessionAuthenticationStrategy" ref="concurrentSessionControlStrategy" />
+		<property name="authenticationFailureHandler" ref="authenticationFailureHandlerDelegateSso"/>
 	</bean>
 
 	<bean id="httpSsoAuthenticationEntryPoint" class="com.fortify.manager.web.security.auth.FmHttpSsoAuthenticationEntryPoint">
 	</bean>
-
-    <bean id="httpSsoAuthenticationProvider" class="com.fortify.manager.web.security.auth.FmHttpSsoAuthenticationProvider">
-		<property name="userDetailsService" ref="userDetailsServiceDelegate" />
-    </bean>
 
 
 	<!-- X509 -->
@@ -190,61 +221,62 @@
 				<property name="usernamePattern" value="${x509.username.pattern}"/>
 			</bean>
 		</property>
-		<property name="authenticationManager" ref="authenticationManager"/>
+		<property name="authenticationManager" ref="preAuthenticatedAuthenticationManager"/>
 		<property name="authenticationSuccessHandler" ref="authenticationSuccessHandlerDelegate"/>
-		<property name="authenticationFailureHandler" ref="authenticationFailureHandlerDelegate"/>
-		<property name="checkForPrincipalChanges" value="true" />
-		<property name="continueFilterChainOnUnsuccessfulAuthentication" value="false" />
+		<property name="authenticationFailureHandler" ref="authenticationFailureHandlerDelegateSso"/>
 	</bean>
 
-    <bean id="x509Provider" class="org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationProvider">
-        <property name="preAuthenticatedUserDetailsService">
-            <bean class="org.springframework.security.core.userdetails.UserDetailsByNameServiceWrapper">
-                <property name="userDetailsService" ref="userDetailsServiceDelegate"/>
-            </bean>
-        </property>
-    </bean>
-
+	<!-- Responsible for local logout - used by CAS and SAML Single Logout implementation -->
+	<bean id="localLogoutHandler" class="com.fortify.manager.security.auth.LocalLogoutHandler"/>
 
 	<!-- REST API authentication -->
 	<bean id="fmApiAuthenticationSuccessHandler" class="com.fortify.manager.web.security.auth.FmApiAuthenticationSuccessHandler"/>
 
 	<bean id="anyRequestMatcher" class="org.springframework.security.web.util.matcher.AnyRequestMatcher" />
 
-	<bean id="tokenAuthenticationProvider" class="com.fortify.manager.security.auth.TokenAuthenticationProvider">
-		<property name="userDetailsService" ref="userDetailsServiceDelegate"/>
+	<!-- Authentication manager for token authentication. Should contain only providers that handle this type of authentication. -->
+	<bean id="apiTokenAuthenticationManager" class="org.springframework.security.authentication.ProviderManager"
+		  parent="authenticationManagerTemplate">
+		<constructor-arg>
+			<bean class="com.fortify.manager.security.auth.TokenAuthenticationProvider">
+				<property name="userDetailsService" ref="userDetailsServiceDelegate"/>
+			</bean>
+		</constructor-arg>
 	</bean>
 
 	<bean id="apiTokenAuthFilter" class="com.fortify.manager.web.security.auth.FmApiTokenAuthenticationFilter">
 		<constructor-arg name="requiresAuthenticationRequestMatcher" ref="anyRequestMatcher"/>
-		<property name="authenticationManager" ref="authenticationManager"/>
+		<property name="authenticationManager" ref="apiTokenAuthenticationManager"/>
 		<property name="authenticationFailureHandler">
             <bean class="com.fortify.manager.web.security.auth.FmApiTokenAuthenticationFailureHandler"/>
 		</property>
 		<property name="authenticationSuccessHandler" ref="fmApiAuthenticationSuccessHandler"/>
 	</bean>
 
-    <bean id="apiBasicAuthFilter" class="com.fortify.manager.web.security.auth.FmApiBasicAuthenticationFilter">
-		<constructor-arg index="0" ref="authenticationManager" />
+    <bean id="abstractApiBasicAuthFilter" abstract="true" class="com.fortify.manager.web.security.auth.FmApiBasicAuthenticationFilter">
+        <constructor-arg index="0" ref="usernamePasswordAuthenticationManager" />
         <constructor-arg index="1">
             <bean class="com.fortify.manager.web.security.auth.FmApiBasicAuthenticationEntryPoint">
-                <constructor-arg value="hp:fortify:ssc:api"/>
+                <constructor-arg value="fortify:ssc:api"/>
             </bean>
         </constructor-arg>
-	</bean>
+    </bean>
+    <bean id="apiBasicAuthFilter" parent="abstractApiBasicAuthFilter">
+        <constructor-arg index="2" value="true"/>
+    </bean>
+
+    <bean id="legacyApiBasicAuthFilter" parent="abstractApiBasicAuthFilter">
+        <constructor-arg index="2" value="${rest.auth.basic.legacy.enable}"/>
+    </bean>
 
 	<bean id="paramTokenAuthorization" class="com.fortify.manager.web.security.auth.ParameterBasedTokenAuthorizationFilter">
 		<constructor-arg name="requiresAuthenticationRequestMatcher" ref="anyRequestMatcher" />
-		<property name="authenticationManager" ref="authenticationManager" />
+		<property name="authenticationManager" ref="apiTokenAuthenticationManager" />
 		<property name="authenticationSuccessHandler" ref="fmApiAuthenticationSuccessHandler"/>
 		<property name="authenticationFailureHandler" ref="fileAuthenticationFailureHandler"/>
 	</bean>
 
 	<!--  Anonymous Authentication -->
-	<bean id="anonymousAuthenticationProvider" class="org.springframework.security.authentication.AnonymousAuthenticationProvider">
-		<constructor-arg index="0" value="default" />
-	</bean>
-
     <bean id="anonProcessingFilter"
           class="org.springframework.security.web.authentication.AnonymousAuthenticationFilter">
         <constructor-arg name="key" value="default"/>
@@ -391,6 +423,9 @@
 				<entry key="com.fortify.manager.BLL.impl.DynamicScanBLLImpl.markDynamicScanAsComplete" value="DynamicScan"/>
 				<entry key="com.fortify.manager.BLL.impl.DynamicScanBLLImpl.markDynamicScanAsPickedUp" value="DynamicScan"/>
 				<entry key="com.fortify.manager.BLL.impl.DynamicScanBLLImpl.setDynamicScanStatus" value="DynamicScan"/>
+				<entry key="com.fortify.manager.BLL.impl.ScanBLLImpl.getScans" value="Artifact"/>
+				<entry key="com.fortify.manager.BLL.impl.ScanBLLImpl.getScanErrorsForArtifact" value="Artifact"/>
+				<entry key="com.fortify.manager.BLL.impl.ScanBLLImpl.getScanById" value="Scan"/>
 				<entry key="com.fortify.manager.BLL.impl.FPRBLLImpl.getById" value="Artifact"/>
 				<entry key="com.fortify.manager.BLL.impl.FPRBLLImpl.getArtifactInputStream" value="Artifact"/>
 				<entry key="com.fortify.manager.BLL.impl.FPRBLLImpl.getArtifactDownloadResult" value="Artifact"/>
@@ -478,7 +513,6 @@
 
 	<bean id="voterUnanimousMethodSecurityInterceptor" class="com.fortify.manager.security.FmMethodSecurityInteceptor">
 		<property name="validateConfigAttributes" value="false"/>
-		<property name="authenticationManager" ref="authenticationManager"/>
 		<property name="accessDecisionManager" ref="voterUnanimousAccessDecisionManager"/>
 		<property name="rejectPublicInvocations" value="false"/>
 		<property name="securityMetadataSource">
@@ -490,31 +524,18 @@
         The FilterSecurityInterceptor will work from the top of the list down to the FIRST pattern that matches the request URL.
         Accordingly, you should place MOST SPECIFIC (ie a/b/c/d.*) expressions first, with LEAST SPECIFIC (ie a/.*) expressions last -->
 	<bean id="filterInvocationInterceptor" class="org.springframework.security.web.access.intercept.FilterSecurityInterceptor">
-		<property name="authenticationManager" ref="authenticationManager"/>
 		<property name="accessDecisionManager" ref="voterUnanimousAccessDecisionManager"/>
 		<property name="securityMetadataSource">
 			<security:filter-security-metadata-source request-matcher="ant" use-expressions="false" >
                 <!--patternstart-do-not-remove-comment-->
 				<security:intercept-url pattern="/index.jsp" access="PERM_WEBLOGIN"/>
-				<security:intercept-url pattern="/login.jsp*" access="PERM_WEBLOGIN, PERM_ANONYMOUS"/>
                 <security:intercept-url pattern="/useraccess" access="PERM_ANONYMOUS"/>
-
 				<security:intercept-url pattern="/changePassword.jsp" access="PERM_WEBLOGIN, PERM_CHANGEPASSWORD"/>
-				<security:intercept-url pattern="/fodlicenseagreement.jsp" access="PERM_ANONYMOUS"/>
-				<security:intercept-url pattern="/error.jsp" access="PERM_WEBLOGIN, PERM_ANONYMOUS"/>
-				<security:intercept-url pattern="/images/**" access=" PERM_WEBLOGIN, PERM_ANONYMOUS, PERM_CHANGEPASSWORD"/>
-				<security:intercept-url pattern="/etc/**" access="PERM_WEBLOGIN, PERM_ANONYMOUS"/>
-				<security:intercept-url pattern="/scripts/**" access="PERM_WEBLOGIN, PERM_ANONYMOUS, PERM_CHANGEPASSWORD"/>
-				<security:intercept-url pattern="/styles/**" access="PERM_WEBLOGIN, PERM_ANONYMOUS, PERM_CHANGEPASSWORD"/>
-				<security:intercept-url pattern="/flex/assets/**" access="PERM_WEBLOGIN, PERM_ANONYMOUS"/>
-				<security:intercept-url pattern="/flex/config/**" access="PERM_WEBLOGIN, PERM_ANONYMOUS"/>
-				<security:intercept-url pattern="/flex/expressinstall.swf" access="PERM_WEBLOGIN, PERM_ANONYMOUS"/>
-				<security:intercept-url pattern="/flex/sscna.swf" access="PERM_WEBLOGIN, PERM_ANONYMOUS"/>
-				<security:intercept-url pattern="/flex/indexna.jsp" access="PERM_WEBLOGIN, PERM_ANONYMOUS"/>
-				<security:intercept-url pattern="/flex/rsls/**" access="PERM_WEBLOGIN, PERM_ANONYMOUS"/>
-				<security:intercept-url pattern="/flex/swfobject.js" access="PERM_WEBLOGIN, PERM_ANONYMOUS"/>
+				<security:intercept-url pattern="/error.jsp" access="PERM_ANONYMOUS"/>
+				<security:intercept-url pattern="/etc/**" access="PERM_ANONYMOUS"/>
+				<security:intercept-url pattern="/scripts/**" access="PERM_ANONYMOUS, PERM_CHANGEPASSWORD"/>
+				<security:intercept-url pattern="/styles/**" access="PERM_ANONYMOUS, PERM_CHANGEPASSWORD"/>
 				<security:intercept-url pattern="/flex/**" access="PERM_WEBLOGIN"/>
-				<security:intercept-url pattern="/flexlog.html" access="PERM_WEBLOGIN, PERM_ANONYMOUS"/>
 				<security:intercept-url pattern="/d3srv" access="PERM_ANONYMOUS"/>
 
 				<security:intercept-url pattern="/html/init/**" access="PERM_FORBIDDEN"/>
@@ -546,19 +567,8 @@
 
 	<bean id="sessionRegistry" class="org.springframework.security.core.session.SessionRegistryImpl"/>
 
-	<bean id="concurrentSessionFilter" class="org.springframework.security.web.session.ConcurrentSessionFilter">
-		<constructor-arg index="0" ref="sessionRegistry"/>
-		<constructor-arg index="1" value="/logout.html"/>
-	</bean>
-
-	<!-- Special version of ConcurrentSessionFilter for REST API request. The difference is that this filter does not
-	  send redirect request, but just invalidates user session and returns error response -->
-	<bean id="concurrentSessionFilterNoRedirect" class="org.springframework.security.web.session.ConcurrentSessionFilter">
-		<constructor-arg index="0" ref="sessionRegistry"/>
-	</bean>
-
 	<!--  Takes care of both session fixation and concurrent sessions -->
-	<bean id="concurrentSessionControlStrategy" class="org.springframework.security.web.authentication.session.CompositeSessionAuthenticationStrategy">
+	<bean id="concurrentSessionAuthenticationStrategy" class="org.springframework.security.web.authentication.session.CompositeSessionAuthenticationStrategy">
 		<constructor-arg>
 				<list>
 					<bean class="org.springframework.security.web.authentication.session.ConcurrentSessionControlAuthenticationStrategy">
@@ -574,5 +584,75 @@
                 </list>
 		</constructor-arg>
 	</bean>
+
+
+    <!-- FILTER GROUPS -->
+
+    <bean id="webUiCompositeInterceptorFilter" class="org.springframework.web.filter.CompositeFilter">
+        <property name="filters">
+            <list>
+                <ref bean="anonProcessingFilter"/>
+                <ref bean="exceptionTranslationFilter"/>
+                <ref bean="filterInvocationInterceptor"/>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="apiCompositeInterceptorFilter" class="org.springframework.web.filter.CompositeFilter">
+        <property name="filters">
+            <list>
+                <ref bean="anonProcessingFilter"/>
+                <ref bean="apiExceptionTranslationFilter"/>
+                <ref bean="filterInvocationInterceptor"/>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="ssoCompositeAuthenticationFilter" class="org.springframework.web.filter.CompositeFilter">
+        <property name="filters">
+            <list>
+                <ref bean="spnegoAuthenticationProcessingFilter"/>
+                <ref bean="httpSsoAuthenticationFilter"/>
+                <ref bean="x509Filter"/>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="webUiCompositeSessionFilter" class="org.springframework.web.filter.CompositeFilter">
+        <property name="filters">
+            <list>
+                <ref bean="secCtxPersistenceFilter"/>
+                <bean class="org.springframework.security.web.session.ConcurrentSessionFilter">
+                    <constructor-arg index="0" ref="sessionRegistry"/>
+                    <constructor-arg index="1" value="/logout.html"/>
+                </bean>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="apiCompositeSessionFilter" class="org.springframework.web.filter.CompositeFilter">
+        <property name="filters">
+            <list>
+                <ref bean="secCtxPersistenceFilter"/>
+                <!-- Special version of ConcurrentSessionFilter for REST API request. The difference is that this filter does not send redirect request, but just invalidates user session and returns error response -->
+                <bean class="org.springframework.security.web.session.ConcurrentSessionFilter">
+                    <constructor-arg index="0" ref="sessionRegistry"/>
+                </bean>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="fileCompositeSecurityFilter" class="org.springframework.web.filter.CompositeFilter">
+        <property name="filters">
+            <list>
+                <ref bean="fileExceptionFilter"/>
+                <ref bean="secCtxTemporaryFilter"/>
+                <ref bean="paramTokenAuthorization"/>
+                <ref bean="anonProcessingFilter"/>
+                <ref bean="fileExceptionTranslationFilter"/>
+                <ref bean="filterInvocationInterceptor"/>
+            </list>
+        </property>
+    </bean>
 
 </beans>

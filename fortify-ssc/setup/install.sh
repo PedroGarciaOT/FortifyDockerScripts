@@ -16,14 +16,14 @@ mv fortify.sh /etc/profile.d/
 source /etc/profile.d/fortify.sh
 
 echo "*** Environment Variables " 
-export FORTIFY_MAJOR=19.2.0
-export FORTIFY_SSC_MAJOR=19.2.1
-export FORTIFY_SCA_MAJOR=19.2.3
-export WEBINSPECT_MAJOR=19.2
+export FORTIFY_MAJOR=20.1.0
+export FORTIFY_SSC_MAJOR=20.1.0
+export FORTIFY_SCA_MAJOR=20.1.0
+export WEBINSPECT_MAJOR=20.1
 
-export MYSQL_DRIVER_VERSION=8.0.19
+export MYSQL_DRIVER_VERSION=8.0.20
 export TOMCAT_MAJOR=9
-export TOMCAT_VERSION=9.0.31
+export TOMCAT_VERSION=9.0.35
 
 # Tomcat native lib
 export TOMCAT_NATIVE_LIBDIR=${CATALINA_HOME}/native-jni-lib
@@ -50,6 +50,7 @@ function install {
     FILE_SCA_LINUX_OPTIONS=${FILE_SCA_LINUX}.options
     FILE_SCA_OSX_OPTIONS=${FILE_SCA_OSX}.options
     FILE_SCA_WINDOWS_OPTIONS=${FILE_SCA_WINDOWS}.options
+    FILE_SCANCENTRAL_CLIENT=Fortify_ScanCentral_Client_${FORTIFY_SCA_MAJOR}_x64.zip
     FILE_SSC_SERVER_ZIP=Fortify_SSC_Server_${FORTIFY_SSC_MAJOR}.zip
     FILE_SSC_SERVER_WAR_ZIP=Fortify_${FORTIFY_SSC_MAJOR}_Server_WAR_Tomcat.zip
 
@@ -148,9 +149,30 @@ function install {
     echo "*** Moving work/jdbc/${FILE_JDBC_DRIVER} to ${CATALINA_HOME}/lib/ " 
     mv work/jdbc/${FILE_JDBC_DRIVER} ${CATALINA_HOME}/lib/
 
+    echo "*** Looking for MS SQL JDBC " 
+    if [ ! -f "FortifyInstallers/sqljdbc_8.2.0.0_enu.tar.gz" ]; then
+        echo "*** Downloading sqljdbc_8.2.0.0_enu.tar.gz" 
+        wget https://download.microsoft.com/download/4/0/8/40815588-bef6-4715-bde9-baace8726c2a/sqljdbc_8.2.0.0_enu.tar.gz  -P FortifyInstallers/
+        tar -pxzf FortifyInstallers/sqljdbc_8.2.0.0_enu.tar.gz -C work/jdbc/ --strip-components=1
+        echo "*** Moving work/jdbc/enu/mssql-jdbc-8.2.0.jre8.jar to ${CATALINA_HOME}/lib/ " 
+        mv work/jdbc/enu/mssql-jdbc-8.2.0.jre8.jar ${CATALINA_HOME}/lib/
+    fi
+
+    echo "*** Looking for Oracle JDBC " 
+    if [ -f "FortifyInstallers/ojdbc8.jar" ]; then
+        echo "*** Moving FortifyInstallers/ojdbc8.jar to ${CATALINA_HOME}/lib/ " 
+        mv FortifyInstallers/ojdbc8.jar ${CATALINA_HOME}/lib/
+    fi 
+
     # Creating Download Site
     echo "*** Customizing SSC - Downloads " 
     mv downloads.jsp ${CATALINA_HOME}/webapps/ssc/downloads/index.jsp
+
+    # Source And Lib Scanner
+    if [ -f "FortifyInstallers/SourceAndLibScanner-${FORTIFY_SCA_MAJOR}-plus-doc.zip" ]; then
+        echo "*** Moving FortifyInstallers/SourceAndLibScanner-${FORTIFY_SCA_MAJOR}-plus-doc.zip to ${CATALINA_HOME}/webapps/ssc/downloads/" 
+        mv FortifyInstallers/SourceAndLibScanner-${FORTIFY_SCA_MAJOR}-plus-doc.zip ${CATALINA_HOME}/webapps/ssc/downloads/ 
+    fi
 
     # SCA Linux
     if [ -f "FortifyInstallers/Fortify_SCA_and_Apps_${FORTIFY_SCA_MAJOR}_Linux.tar.gz" ]; then
@@ -202,6 +224,15 @@ function install {
         ls -alF work/sca-windows/ 
         echo "          "
     fi 
+    echo "*** Moving SCA Windows Installer and Options to ${CATALINA_HOME}/webapps/ssc/downloads/"
+    mv fortify_sca_unattended_windows.options ${CATALINA_HOME}/webapps/ssc/downloads/${FILE_SCA_WINDOWS_OPTIONS}
+    mv work/sca-windows/${FILE_SCA_WINDOWS} ${CATALINA_HOME}/webapps/ssc/downloads/
+
+    # ScanCentral Client
+    if [ -f "FortifyInstallers/${FILE_SCANCENTRAL_CLIENT}" ]; then
+        echo "*** Moving ScanCentral Client FortifyInstallers/${FILE_SCANCENTRAL_CLIENT} to ${CATALINA_HOME}/webapps/ssc/downloads/"  
+        mv FortifyInstallers/${FILE_SCANCENTRAL_CLIENT} ${CATALINA_HOME}/webapps/ssc/downloads/
+    fi
 
     # Other downloads
     echo "*** Looking for  ${FILE_BIRT} " 

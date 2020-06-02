@@ -8,17 +8,15 @@ RUN chmod a+x *.sh
 
 RUN ./install.sh
 
-ENV FORTIFY_SCANCENTRAL_MAJOR=19.2.1 \
+ENV FORTIFY_SCANCENTRAL_MAJOR=20.1.0 \
     JAVA_MAJOR=8 \
-    JAVA_VERSION=1.8.0_241 \
-    FORTIFY_HOME=/tools/fortify \
     FORTIFY_SCANCENTRAL_HOME=/tools/fortify \
     CATALINA_HOME=/tools/fortify/tomcat \
     JAVA_HOME=/tools/java/jdk-8
 
 ENV PATH=$JAVA_HOME/bin:$CATALINA_HOME/bin:$FORTIFY_SCANCENTRAL_HOME/bin:$PATH
 
-RUN chown -R microfocus:microfocus /tools && chown -R microfocus:microfocus /CloudscanWorkdir
+RUN chown -R microfocus:microfocus /tools 
 
 WORKDIR $FORTIFY_SCANCENTRAL_HOME
 
@@ -30,6 +28,6 @@ EXPOSE 8080
 
 USER microfocus
 
-VOLUME "/home/microfocus/.fortify" "/tools/fortify/tomcat/logs" "/CloudscanWorkdir"  
+VOLUME "/home/microfocus/.fortify" "/tools/fortify/tomcat/logs"  
 
 CMD [ "catalina.sh", "run" ]

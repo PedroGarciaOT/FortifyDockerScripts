@@ -5,7 +5,7 @@
 <profile>
       <id>fortify</id>
       <properties>
-        <fortify.cloudScan.cloudCtrl.url>http://demo.mf:8380/cloud-ctrl</fortify.cloudScan.cloudCtrl.url>
+        <fortify.cloudScan.cloudCtrl.url>http://demo.mf:8380/scancentral-ctrl</fortify.cloudScan.cloudCtrl.url>
         <fortify.cloudScan.ssc.url>http://demo.mf:8180/ssc</fortify.cloudScan.ssc.url>
         <fortify.cloudScan.ssc.cloudCtrlToken>f0cb2d99-8a8b-4198-ad2b-2d549acba0fb</fortify.cloudScan.ssc.cloudCtrlToken>
         <fortify.cloudScan.ssc.uploadToken>f0cb2d99-8a8b-4198-ad2b-2d549acba0fb</fortify.cloudScan.ssc.uploadToken>

@@ -81,8 +81,7 @@
 				]]>
 			</value>
 		</property>
-		<!--<property name="maxDaysToLive" value="90"/>-->
-		<property name="maxDaysToLive" value="999"/>
+		<property name="maxDaysToLive" value="90"/>
 		<property name="actionPermitted">
 			<list value-type="java.lang.String">
 				<value>FPRUploadRequest</value>
@@ -255,13 +254,12 @@
 		<property name="capabilityDescription">
 			<value>
 				<![CDATA[
-				This token specification is used with the Fortify CloudScan CLI tools.
-				See Fortify CloudScan documentation for further information on its use.
+				(Deprecated - use ScanCentralCtrlToken instead)
 				]]>
 			</value>
 		</property>
-		<!--<property name="maxDaysToLive" value="90"/>-->
-		<property name="maxDaysToLive" value="999"/>
+		<!-- <property name="maxDaysToLive" value="90" /> -->
+		<property name="maxDaysToLive" value="999" />
 		<property name="actionPermitted">
 			<list value-type="java.lang.String">
 				<value>FPRUploadRequest</value>
@@ -283,13 +281,71 @@
 		</property>
 	</bean>
 
+	<bean id="scanCentralCtrlToken" class="com.fortify.manager.security.ws.AuthenticationTokenSpec">
+		<property name="key" value="ScanCentralCtrlToken" />
+		<property name="capabilityDescription">
+			<value>
+				<![CDATA[
+				This token specification is used with the Fortify ScanCentral CLI tools.
+				See Fortify ScanCentral documentation for further information on its use.
+				]]>
+			</value>
+		</property>
+		<!-- <property name="maxDaysToLive" value="90" /> -->
+		<property name="maxDaysToLive" value="999" />
+		<property name="actionPermitted">
+			<list value-type="java.lang.String">
+				<value>FPRUploadRequest</value>
+				<value>GetSingleUseFPRUploadTokenRequest</value>
+				<value>ActiveProjectVersionListRequest</value>
+				<value>ProjectListRequest</value>
+				<value>CloudCtrlUrlRequest</value>
+				<value>CloudOneTimeJobTokenRequest</value>
+				<value>SearchProjectVersionRequest</value>
+				<value>GET=/api/v\d+/cloudmappings/mapByVersion\w+</value>
+				<!-- scanCentralCtrlToken permitted actions are required for VSTSExtensionToken -->
+			</list>
+		</property>
+		<property name="terminalActions">
+			<list value-type="java.lang.String">
+				<value>InvalidateTokenRequest</value>
+				<value>DELETE=/api/v\d+/auth/token</value>
+			</list>
+		</property>
+	</bean>
+
+	<bean id="scanCentralOneTimeJobToken" class="com.fortify.manager.security.ws.AuthenticationTokenSpec">
+		<property name="key" value="ScanCentralOneTimeJobToken" />
+		<property name="capabilityDescription">
+			<value>
+				<![CDATA[
+				Single-use token specification that is not usually created manually. This token is created
+				programmatically by the ScanCentral client.
+				]]>
+			</value>
+		</property>
+		<property name="maxUsages" value="1"/>
+		<property name="maxDaysToLive" value="1" />
+		<property name="actionPermitted">
+			<list value-type="java.lang.String">
+				<value>VerifyCloudOneTimeJobTokenRequest</value>
+			</list>
+		</property>
+		<property name="terminalActions">
+			<list value-type="java.lang.String">
+				<value>VerifyCloudOneTimeJobTokenRequest</value>
+				<value>InvalidateTokenRequest</value>
+				<value>DELETE=/api/v\d+/auth/token</value>
+			</list>
+		</property>
+	</bean>
+
 	<bean id="cloudOneTimeJobToken" class="com.fortify.manager.security.ws.AuthenticationTokenSpec">
 		<property name="key" value="CloudOneTimeJobToken" />
 		<property name="capabilityDescription">
 			<value>
 				<![CDATA[
-				Single-use token specification that is not usually created manually. This token is created
-				programmatically by the CloudScan client.
+				(Deprecated - replaced by ScanCentralOneTimeJobToken)
 				]]>
 			</value>
 		</property>
@@ -318,8 +374,8 @@
 				]]>
 			</value>
 		</property>
-		<!--<property name="maxDaysToLive" value="90"/>-->
-		<property name="maxDaysToLive" value="999"/>
+		<!-- <property name="maxDaysToLive" value="90"/> -->
+		<property name="maxDaysToLive" value="999" />
 		<property name="actionPermitted">
 			<list value-type="java.lang.String">
 				<value>RegisterWIERequest</value>
@@ -347,8 +403,8 @@
 				]]>
 			</value>
 		</property>
-		<!--<property name="maxDaysToLive" value="90"/>-->
-		<property name="maxDaysToLive" value="999"/>
+		<!-- <property name="maxDaysToLive" value="90"/> -->
+		<property name="maxDaysToLive" value="999" />
 		<property name="actionPermitted">
 			<list value-type="java.lang.String">
 				<value>LinkProjectVersionRequest</value>
@@ -491,12 +547,12 @@
 			<value>
 				<![CDATA[
 				This multi-use token specification is used by the Fortify VSTS extension to
-				upload FPR(s) to SSC and optionally submit a scan to Fortify CloudScan.
+				upload FPR(s) to SSC and optionally submit a scan to Fortify ScanCentral.
 				]]>
 			</value>
 		</property>
-		<!--<property name="maxDaysToLive" value="90"/>-->
-		<property name="maxDaysToLive" value="999"/>
+		<!-- <property name="maxDaysToLive" value="90" /> -->
+		<property name="maxDaysToLive" value="999" />
 		<property name="actionPermitted">
 			<list value-type="java.lang.String">
 				<value>GetSingleUseFPRUploadTokenRequest</value>
@@ -517,132 +573,6 @@
 		</property>
 	</bean>
 
-	<bean id="jenkinsToken" class="com.fortify.manager.security.ws.AuthenticationTokenSpec">
-		<property name="key" value="JenkinsToken"/>
-		<property name="capabilityDescription">
-			<value>
-				<![CDATA[
-				This token specification is now obsolete.
-				Please use the CIToken for future integrations with continuous integration plugins.
-				]]>
-			</value>
-		</property>
-		<!--<property name="maxDaysToLive" value="90"/>-->
-		<property name="maxDaysToLive" value="999"/>
-		<!-- NOTE: Since this token is now obsolete, it should not be given any additional capabilities.
-		     Post-17.2 versions of Jenkins or Bamboo plugin must be based on the CIToken below
-		     so any new endpoints used for CI plugins only need to be added there.
-		-->
-		<property name="actionPermitted">
-			<list value-type="java.lang.String">
-				<value>AddProjectRequest</value>
-				<value>AddProjectVersionRequest</value>
-				<value>AddProjectAndVersionRequest</value>
-				<value>ProjectListRequest</value>
-				<value>ActiveProjectVersionListRequest</value>
-				<value>ProjectVersionListRequest</value>
-				<value>ProjectTemplateListRequest</value>
-				<value>FPRUploadRequest</value>
-				<value>AuditViewRequest</value>
-				<value>PerformAuditActionRequest</value>
-				<value>IssueListRequest</value>
-				<value>GetProjectVersionIdentifiersRequest</value>
-				<value>ProjectMetaDataDefinitionsListRequest</value>
-				<value>AddProjectMetaDataDefinitionRequest</value>
-				<value>UpdateProjectMetaDataDefinitionRequest</value>
-				<value>ProjectMetaDataValuesListRequest</value>
-				<value>ProjectMetaDataValueRequest</value>
-				<value>GetSingleUseFPRUploadTokenRequest</value>
-				<value>CreateAuditSessionRequest</value>
-				<value>InvalidateAuditSessionRequest</value>
-				<value>GroupingValuesRequest</value>
-				<value>GET=/api/v\d+/projectVersions/\d+/auditAssistantTrainingStatus/?</value>
-				<value>GET=/api/v\d+/activityFeedEvents/?</value>
-				<value>(GET|PUT|POST)=/api/v\d+/alertDefinitions(/|/\d+/?)?</value>
-				<value>(GET|POST)=/api/v\d+/alerts(/|/action/?)?</value>
-				<value>GET=/api/v\d+/alertableEventTypes/?</value>
-				<value>GET=/api/v\d+/applicationState/?</value>
-				<value>(GET|POST)=/api/v\d+/artifacts/\d+(/|/action/?)?</value>
-				<value>(GET|POST)=/api/v\d+/projectVersions/\d+/artifacts/?</value>
-				<value>GET=/api/v\d+/attributeDefinitions(/|/\d+?/?)?</value>
-				<value>(GET|PUT|POST)=/api/v\d+/projects/\d+/attributes(/|/\d+/?)?</value>
-				<value>(GET|PUT|POST)=/api/v\d+/projectVersions/\d+/attributes(/|/\d+/?)?</value>
-				<value>GET=/api/v\d+/projectVersions/\d+/auditAssistantStatus/?</value>
-				<value>GET=/api/v\d+/issues/\d+/auditHistory/?</value>
-				<value>GET=/api/v\d+/authEntities(/|/\d+/?)?</value>
-				<value>GET=/api/v\d+/projects/\d+/authEntities(/|/\d+/?)?</value>
-				<value>GET=/api/v\d+/projectVersions/\d+/authEntities(/|/\d+/?)?</value>
-				<value>(GET|PUT|POST)=/api/v\d+/projectVersions/\d+/bugfilingrequirements(/|/action/?)?</value>
-				<value>GET=/api/v\d+/bugtrackers/?</value>
-				<value>(GET|PUT|POST)=/api/v\d+/projectVersions/\d+/bugtracker(/|/action/?)?</value>
-				<value>POST=/api/v\d+/bulk/?</value>
-				<value>(GET|POST)=/api/v\d+/cloudjobs(/[^/]+)*/?</value>
-				<value>GET=/api/v\d+/cloudpools(/[^/]+)*/?</value>
-				<value>(GET|POST)=/api/v\d+/cloudmappings/mapBy.+?</value>
-				<value>GET=/api/v\d+/cloudsystem/[^/]+/?</value>
-				<value>GET=/api/v\d+/cloudworkers(/[^/]+)*/?</value>
-				<value>GET=/api/v\d+/configuration(/[^/]+)*/?</value>
-				<value>GET=/api/v\d+/customTags(/|/\d+/?)?</value>
-				<value>GET=/api/v\d+/issueTemplates/?</value>
-				<value>(GET|PUT|POST)=/api/v\d+/projectVersions/\d+/customTags/?</value>
-				<value>(GET|POST)=/api/v\d+/dataExports(/|/action/?)?</value>
-				<value>GET=/api/v\d+/engineTypes/?</value>
-				<value>GET=/api/v\d+/features(/[^/]+)*/?</value>
-				<value>POST=/api/v\d+/fileTokens/?</value>
-				<value>GET=/api/v\d+/projectVersions/\d+/filterSets/?</value>
-				<value>GET=/api/v\d+/folders/?</value>
-				<value>GET=/api/v\d+/projectVersions/\d+/folders(/|/\d+/?)?</value>
-				<value>GET=/api/v\d+/iidMigrations/\d+/?</value>
-				<value>(GET|POST)=/api/v\d+/projectVersions/\d+/iidMigrations/?</value>
-				<value>GET=/api/v\d+/projectVersions/\d+/issueAssignment(/[^/]+)*/?</value>
-				<value>(GET|PUT|POST)=/api/v\d+/issues/\d+/attachments(/|/\d+/?)?</value>
-				<value>GET=/api/v\d+/comments/?</value>
-				<value>(GET|POST)=/api/v\d+/issues/\d+/comments/?</value>
-				<value>GET=/api/v\d+/issues(/|/\d+/?)?</value>
-				<value>GET=/api/v\d+/issueDetails(/|/\d+/?)?</value>
-				<value>GET=/api/v\d+/projectVersions/\d+/issueGroups/?</value>
-				<value>(GET|POST)=/api/v\d+/projectVersions/\d+/issues(/|/action|/\d+/?)?</value>
-				<value>GET=/api/v\d+/projectVersions/\d+/issueSelectorSet/?</value>
-				<value>GET=/api/v\d+/projectVersions/\d+/issueStatistics/?</value>
-				<value>GET=/api/v\d+/projectVersions/\d+/issueSummaries/?</value>
-				<value>(GET|PUT)=/api/v\d+/issueTemplates(/[^/]+)*/?</value>
-				<value>GET=/api/v\d+/jobs(/[^/]+)*/?</value>
-				<value>GET=/api/v\d+/performanceIndicators/?</value>
-				<value>GET=/api/v\d+/projectVersions/\d+/performanceIndicatorHistories(/[^/]+)*/?</value>
-				<value>(GET|PUT|POST)=/api/v\d+/projects(/|/action/?|/\d+/?)?</value>
-				<value>(GET|PUT|POST)=/api/v\d+/projectVersions(/|/action/?|/\d+(/|/action/?)?)?</value>
-				<value>GET=/api/v\d+/alertDefinitions/\d+/projectVersions/?</value>
-				<value>GET=/api/v\d+/authEntities/\d+/projectVersions/?</value>
-				<value>(GET|POST)=/api/v\d+/cloudpools/[^/]+/versions(/|/action/?)?</value>
-				<value>(GET|POST)=/api/v\d+/projects/\d+/versions/?</value>
-				<value>GET=/api/v\d+/reportDefinitions(/|/\d+/?)?</value>
-				<value>GET=/api/v\d+/reportLibraries(/|/\d+/?)?</value>
-				<value>(GET|PUT)=/api/v\d+/projects/\d+/responsibilities(/[^/]+)*/?</value>
-				<value>(GET|PUT)=/api/v\d+/projectVersions/\d+/responsibilities(/[^/]+)*/?</value>
-				<value>(GET|PUT)=/api/v\d+/projectVersions/\d+/resultProcessingRules/?</value>
-				<value>GET=/api/v\d+/authEntities/\d+/roles/?</value>
-				<value>GET=/api/v\d+/coreRulepacks/?</value>
-				<value>GET=/api/v\d+/updateRulepacks/?</value>
-				<value>(GET|POST)=/api/v\d+/reports(/|/\d+/?)?</value>
-				<value>GET=/api/v\d+/scans/\d+/?</value>
-				<value>GET=/api/v\d+/artifacts/\d+/scanerrors/?</value>
-				<value>GET=/api/v\d+/artifacts/\d+/scans/?</value>
-				<value>GET=/api/v\d+/projectVersions/\d+/sourceFiles(/[^/]+)*/?</value>
-				<value>GET=/api/v\d+/systemConfiguration(/[^/]+)*/?</value>
-				<value>GET=/api/v\d+/cloudpools/disabledWorkers/?</value>
-				<value>(GET|PUT)=/api/v\d+/projectVersions/\d+/issueViewOptions(/[^/]+)*/?</value>
-				<value>GET=/api/v\d+/variables/?</value>
-				<value>GET=/api/v\d+/projectVersions/\d+/variableHistories(/[^/]+)*/?</value>
-
-			</list>
-		</property>
-		<property name="terminalActions">
-			<list value-type="java.lang.String">
-				<value>InvalidateTokenRequest</value>
-			</list>
-		</property>
-	</bean>
-
 	<bean id="ciToken" class="com.fortify.manager.security.ws.AuthenticationTokenSpec">
 		<property name="key" value="CIToken"/>
 		<property name="capabilityDescription">
@@ -654,7 +584,8 @@
 				]]>
 			</value>
 		</property>
-		<property name="maxDaysToLive" value="365"/>
+		<!--<property name="maxDaysToLive" value="365"/>-->
+		<property name="maxDaysToLive" value="999" />
 		<property name="actionPermitted">
 			<list value-type="java.lang.String">
 				<value>AddProjectRequest</value>

@@ -16,8 +16,8 @@ mv fortify.sh /etc/profile.d/
 source /etc/profile.d/fortify.sh
 
 echo "*** Environment Variables " 
-export FORTIFY_MAJOR=19.2.0
-export FORTIFY_SCANCENTRAL_MAJOR=19.2.1
+export FORTIFY_MAJOR=20.1.0
+export FORTIFY_SCANCENTRAL_MAJOR=20.1.0
 
 # Tomcat native lib
 export TOMCAT_NATIVE_LIBDIR=${CATALINA_HOME}/native-jni-lib
@@ -27,8 +27,9 @@ function install {
     DEBUG="true"
 
     echo "*** Starting Installation " 
-    FILE_SCANCENTRAL=Fortify_CloudScan_Controller_${FORTIFY_SCANCENTRAL_MAJOR}.zip
-    FILE_SCANCENTRAL_CONTROLLER=Fortify_CloudScan_Controller_${FORTIFY_SCANCENTRAL_MAJOR}_x64.zip
+    FILE_SCANCENTRAL=Fortify_ScanCentral_Controller_${FORTIFY_SCANCENTRAL_MAJOR}.zip
+    FILE_SCANCENTRAL_CONTROLLER=Fortify_ScanCentral_Controller_${FORTIFY_SCANCENTRAL_MAJOR}_x64.zip
+    FILE_SCANCENTRAL_CLIENT=Fortify_ScanCentral_Client_${FORTIFY_SCANCENTRAL_MAJOR}_x64.zip
     FILE_SCANCENTRAL_CONFIG=${FORTIFY_SCANCENTRAL_MAJOR}-config.properties
 
 
@@ -45,7 +46,6 @@ function install {
     fi
 
     mkdir -p ${FORTIFY_SCANCENTRAL_HOME}/
-    mkdir /CloudscanWorkdir/
     mkdir -p /home/microfocus/.fortify/
     mkdir -p work/scancentral/
 
@@ -59,26 +59,28 @@ function install {
     echo "*** Unziping work/scancentral/${FILE_SCANCENTRAL_CONTROLLER} to ${FORTIFY_SCANCENTRAL_HOME}/ "
     unzip -qq work/scancentral/${FILE_SCANCENTRAL_CONTROLLER} -d ${FORTIFY_SCANCENTRAL_HOME}/
     
-    mv ${CATALINA_HOME}/webapps/cloud-ctrl/WEB-INF/classes/config.properties ${CATALINA_HOME}/webapps/cloud-ctrl/WEB-INF/classes/config.bkp
+    mv ${CATALINA_HOME}/webapps/scancentral-ctrl/WEB-INF/classes/config.properties ${CATALINA_HOME}/webapps/scancentral-ctrl/WEB-INF/classes/config.bkp
 
-    mv ${FILE_SCANCENTRAL_CONFIG} ${CATALINA_HOME}/webapps/cloud-ctrl/WEB-INF/classes/config.properties
+    mv ${FILE_SCANCENTRAL_CONFIG} ${CATALINA_HOME}/webapps/scancentral-ctrl/WEB-INF/classes/config.properties
 
-    cp ${FORTIFY_SCANCENTRAL_HOME}/cloudscan.zip ${CATALINA_HOME}/webapps/cloud-ctrl/
+    if [ -f "work/scancentral/${FILE_SCANCENTRAL_CLIENT}" ]; then    
+        mv ${CATALINA_HOME}/webapps/scancentral-ctrl/index.html ${CATALINA_HOME}/webapps/scancentral-ctrl/controller.html
 
-    mv ${CATALINA_HOME}/webapps/cloud-ctrl/index.html ${CATALINA_HOME}/webapps/cloud-ctrl/controller.html
+        mv index.html ${CATALINA_HOME}/webapps/scancentral-ctrl/
 
-    mv index.html ${CATALINA_HOME}/webapps/cloud-ctrl/
+        mv work/scancentral/${FILE_SCANCENTRAL_CLIENT} ${CATALINA_HOME}/webapps/scancentral-ctrl/scancentral.zip
+    fi
 
     mv setenv.sh ${CATALINA_HOME}/bin
 
     rm ${CATALINA_HOME}/bin/*.bat
+    rm ${FORTIFY_SCANCENTRAL_HOME}/bin/*.bat
 
     chmod a+x ${FORTIFY_SCANCENTRAL_HOME}/bin/pwtool
     chmod a+x ${CATALINA_HOME}/bin/*.sh
     
     chown -R microfocus:microfocus /home/microfocus/.fortify/
     chown -R microfocus:microfocus ${FORTIFY_SCANCENTRAL_HOME}/
-    chown -R microfocus:microfocus /CloudscanWorkdir/
     chown -R microfocus:microfocus /tools
     
     echo "*** Preparing to build Tomcat native libraries *" 

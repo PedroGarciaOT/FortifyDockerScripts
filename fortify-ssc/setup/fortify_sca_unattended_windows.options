@@ -4,4 +4,3 @@ installdir=C:\Tools\Fortify\SCA
 UpdateServer=http://srv-fortify-linux:8180/ssc
 MigrateSCA=0
 InstallSamples=1
-

@@ -1,12 +1,4 @@
-FROM pedrogarciamf/fortify-centos:8
-
-COPY setup /setup
-
-WORKDIR /setup
-
-RUN chmod a+x *.sh
-
-RUN ./install.sh
+FROM pedrogarciamf/fortify-sca:imported
 
 ENV FORTIFY_SCA_MAJOR=20.1.0 \
     JAVA_MAJOR=8 \
@@ -22,17 +14,10 @@ ENV FORTIFY_SCA_MAJOR=20.1.0 \
 
 ENV PATH=$JAVA_HOME/bin:$FORTIFY_SCA_HOME/bin:$ANT_HOME/bin:$MAVEN_HOME/bin:$GRADLE_HOME/bin:$PATH
 
-RUN chown -R microfocus:microfocus /tools && chown -R microfocus:microfocus /ScanCentralWorkdir
-
 WORKDIR /ScanCentralWorkdir
-
-RUN cat /install.log
-
-RUN rm -rf /setup
 
 USER microfocus
 
 VOLUME "/home/microfocus/.fortify" "/ScanCentralWorkdir" "/tools/maven/repo" "/tools/gradle/home" 
 
 CMD ["startsensor"]
-
