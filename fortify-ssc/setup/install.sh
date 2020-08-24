@@ -17,8 +17,9 @@ source /etc/profile.d/fortify.sh
 
 echo "*** Environment Variables " 
 export FORTIFY_MAJOR=20.1.0
-export FORTIFY_SSC_MAJOR=20.1.0
-export FORTIFY_SCA_MAJOR=20.1.0
+export FORTIFY_SSC_MAJOR=20.1.1
+export FORTIFY_SCANCENTRAL_MAJOR=20.1.1
+export FORTIFY_SCA_MAJOR=20.1.2
 export WEBINSPECT_MAJOR=20.1
 
 export MYSQL_DRIVER_VERSION=8.0.20
@@ -50,7 +51,7 @@ function install {
     FILE_SCA_LINUX_OPTIONS=${FILE_SCA_LINUX}.options
     FILE_SCA_OSX_OPTIONS=${FILE_SCA_OSX}.options
     FILE_SCA_WINDOWS_OPTIONS=${FILE_SCA_WINDOWS}.options
-    FILE_SCANCENTRAL_CLIENT=Fortify_ScanCentral_Client_${FORTIFY_SCA_MAJOR}_x64.zip
+    FILE_SCANCENTRAL_CLIENT=Fortify_ScanCentral_Client_${FORTIFY_SCANCENTRAL_MAJOR}_x64.zip
     FILE_SSC_SERVER_ZIP=Fortify_SSC_Server_${FORTIFY_SSC_MAJOR}.zip
     FILE_SSC_SERVER_WAR_ZIP=Fortify_${FORTIFY_SSC_MAJOR}_Server_WAR_Tomcat.zip
 
@@ -232,6 +233,7 @@ function install {
     if [ -f "FortifyInstallers/${FILE_SCANCENTRAL_CLIENT}" ]; then
         echo "*** Moving ScanCentral Client FortifyInstallers/${FILE_SCANCENTRAL_CLIENT} to ${CATALINA_HOME}/webapps/ssc/downloads/"  
         mv FortifyInstallers/${FILE_SCANCENTRAL_CLIENT} ${CATALINA_HOME}/webapps/ssc/downloads/
+        cp ${CATALINA_HOME}/webapps/ssc/downloads/${FILE_SCANCENTRAL_CLIENT} ${CATALINA_HOME}/webapps/ssc/downloads/scancentral.zip
     fi
 
     # Other downloads

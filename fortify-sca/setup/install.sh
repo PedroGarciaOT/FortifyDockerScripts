@@ -17,7 +17,7 @@ source /etc/profile.d/fortify.sh
 
 echo "*** Environment Variables " 
 export FORTIFY_MAJOR=20.1.0
-export FORTIFY_SCA_MAJOR=20.1.0
+export FORTIFY_SCA_MAJOR=20.1.2
 
 function install { 
     DEBUG="true"

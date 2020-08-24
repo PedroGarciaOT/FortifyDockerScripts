@@ -17,7 +17,7 @@ source /etc/profile.d/fortify.sh
 
 echo "*** Environment Variables " 
 export FORTIFY_MAJOR=20.1.0
-export FORTIFY_SCANCENTRAL_MAJOR=20.1.0
+export FORTIFY_SCANCENTRAL_MAJOR=20.1.1
 
 # Tomcat native lib
 export TOMCAT_NATIVE_LIBDIR=${CATALINA_HOME}/native-jni-lib
