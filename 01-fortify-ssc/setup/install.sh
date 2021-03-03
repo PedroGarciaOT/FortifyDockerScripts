@@ -306,6 +306,9 @@ function install {
     mv -f ${CATALINA_HOME}/webapps/ssc/WEB-INF/internal/serviceContext.xml ${CATALINA_HOME}/webapps/ssc/WEB-INF/internal/serviceContext.bkp
     mv -f serviceContext.xml ${CATALINA_HOME}/webapps/ssc/WEB-INF/internal/serviceContext.xml
 
+    mv -f ${CATALINA_HOME}/webapps/ssc/WEB-INF/init/app.properties ${CATALINA_HOME}/webapps/ssc/WEB-INF/init/app.properties.bkp
+    mv -f app.properties ${CATALINA_HOME}/webapps/ssc/WEB-INF/init/app.properties
+
     echo "*** Customizing Tomcat Landing Page" 
     mv setenv.sh ${CATALINA_HOME}/bin/
     rm -f ${CATALINA_HOME}/bin/*.bat
