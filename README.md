@@ -1,5 +1,5 @@
 # FortifyDockerScripts
-My Fortify Docker Scripts for SSC, SCA and ScanCentral. 
+My Fortify Docker Scripts for SSC, SCA and ScanCentral SAST. 
 
 In order to setup a demo/test environment you may follow the steps below
 
