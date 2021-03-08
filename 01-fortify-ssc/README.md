@@ -29,9 +29,9 @@ In case you need the scripts to create the database copy them using
 docker cp fortify-ssc:/tools/fortify/sql . 
 ``` 
 
-Is case you are using MySQL the JDBC URL will be something like this 
+Is case you are using MariaDB the JDBC URL will be something like this 
 ```  
-jdbc:mysql://fortify-mysql:3306/ssc?connectionCollation=latin1_general_cs&rewriteBatchedStatements=true&useSSL=false 
+jdbc:mysql://fortify-mysql:3306/ssc?sessionVariables=collation_connection=latin1_general_cs&rewriteBatchedStatements=true&useSSL=false
 ``` 
 
 In case you are planning to use several instances or in case you want to save disk space I recommend flattening the container into a new image. 
