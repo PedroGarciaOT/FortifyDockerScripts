@@ -233,8 +233,9 @@ function install {
     # ScanCentral Client
     if [ -f "FortifyInstallers/${FILE_SCANCENTRAL_CLIENT}" ]; then
         echo "*** Moving ScanCentral Client FortifyInstallers/${FILE_SCANCENTRAL_CLIENT} to ${CATALINA_HOME}/webapps/ssc/downloads/"  
-        mv FortifyInstallers/${FILE_SCANCENTRAL_CLIENT} ${CATALINA_HOME}/webapps/ssc/downloads/
-        cp ${CATALINA_HOME}/webapps/ssc/downloads/${FILE_SCANCENTRAL_CLIENT} ${CATALINA_HOME}/webapps/ssc/downloads/scancentral.zip
+        mv FortifyInstallers/${FILE_SCANCENTRAL_CLIENT} ${CATALINA_HOME}/webapps/ssc/downloads/scancentral.zip
+        mv client.properties ${CATALINA_HOME}/webapps/ssc/downloads/client.properties
+        mv scancentral.properties ${CATALINA_HOME}/webapps/ssc/downloads/scancentral.properties
     fi
 
     # Other downloads
