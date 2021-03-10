@@ -33,6 +33,11 @@ echo "*** Creating fortify-sca volumes ***"
 docker volume create fortify_sca_home
 docker volume create fortify_sca_workdir
 
+if [ ! -f "/opt/fortify/fortify.license" ]; then 
+    mkdir -p /opt/fortify/
+    cp setup/FortifyInstallers/fortify.license /opt/fortify/
+fi
+
 echo "*** Starting fortify-sca ***"
 docker run --detach --memory=8g --hostname fortify-sca --name fortify-sca-8g --mount type=bind,src=/opt/fortify/fortify.license,dst=/tools/fortify/sca/fortify.license --volume fortify_sca_home:/home/microfocus/.fortify --volume fortify_sca_workdir:/ScanCentralWorkdir --network=fortify-network --ip=172.50.0.14  --add-host=fortify-ssc:172.50.0.12 --add-host=scancentral-sast:172.50.0.13 pedrogarciamf/fortify-sca:latest
 

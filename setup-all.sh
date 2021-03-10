@@ -15,17 +15,25 @@ if [ ! -f "/opt/fortify/fortify.license" ]; then
     mkdir -p /opt/fortify
     if [ -f "01-fortify-ssc/setup/FortifyInstallers/fortify.license" ]; then 
         cp 01-fortify-ssc/setup/FortifyInstallers/fortify.license /opt/fortify/
+        if [ ! -f "03-fortify-sca/setup/FortifyInstallers/fortify.license" ]; then 
+            cp 01-fortify-ssc/setup/FortifyInstallers/fortify.license cp 03-fortify-sca/setup/FortifyInstallers/
+        fi
+    else if [ -f "03-fortify-sca/setup/FortifyInstallers/fortify.license" ]; then 
+        cp 03-fortify-sca/setup/FortifyInstallers/fortify.license /opt/fortify/
+        cp 03-fortify-sca/setup/FortifyInstallers/fortify.license 01-fortify-ssc/setup/FortifyInstallers/
     else
+        echo "***WARNING! A valid license is required at 01-fortify-ssc/setup/FortifyInstallers/fortify.license"
         touch /opt/fortify/fortify.license
     fi
 fi 
 
-if [ ! -f "/opt/mysql/my.cnf" ]; then 
+if [ ! -f "/opt/mysql/config/my.cnf" ]; then 
     mkdir -p /opt/mysql/config
     mkdir -p /opt/mysql/data
     if [ -f "01-fortify-ssc/setup/FortifyInstallers/my.cnf" ]; then 
         cp 01-fortify-ssc/setup/FortifyInstallers/my.cnf /opt/mysql/config/
     else
+        echo "***WARNING! MySQL requires additional configuration at /opt/mysql/config/my.cnf"
         touch /opt/mysql/config/my.cnf
     fi
 fi
@@ -65,6 +73,10 @@ chmod a+x *.sh
 
 cd ../
 
+docker volume create fortify_jenkins_home
+
+docker run --detach --hostname fortify-jenkins --publish 8585:8080 --publish 50000:50000 --name fortify-jenkins --volume fortify_jenkins_home:/var/jenkins_home --network=fortify-network --ip=172.50.0.3 --add-host=fortify-gitlab:172.50.0.4 --add-host=fortify-nexus:172.50.0.5 --add-host=fortify-dtrack:172.50.0.6 --add-host=fortify-sonar:172.50.0.9 --add-host=fortify-ssc:172.50.0.12 --add-host=scancentral-sast:172.50.0.13 jenkins/jenkins:lts
+
 docker ps -a
 
 docker images
@@ -74,7 +86,7 @@ echo "Copy Fortify SSC init.token: "
 cat ./01-fortify-ssc/init.token && echo
 
 echo "          "
-echo "Press ENTER to start cleanup"
+echo "***INFO! Cleaning up Docker System"
 echo "          "
 
 docker system prune -a -f

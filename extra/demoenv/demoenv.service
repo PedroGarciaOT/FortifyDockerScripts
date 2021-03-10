@@ -1,0 +1,16 @@
+[Unit]
+Description=Fortify Demo Environment
+After=docker.service
+BindsTo=docker.service
+Wants=network-online.target
+StartLimitBurst=3
+StartLimitInterval=180s
+
+[Service]
+User=root
+ExecStart=/opt/demoenv/start.sh
+ExecStop=/opt/demoenv/stop.sh
+
+[Install]
+WantedBy=multi-user.target
+

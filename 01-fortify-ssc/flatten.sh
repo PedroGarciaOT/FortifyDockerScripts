@@ -35,7 +35,7 @@ docker volume create fortify_ssc_logs
 docker volume create fortify_ssc_search_index
 
 echo "*** Starting fortify-ssc ***"
-docker run --detach --hostname fortify-ssc --publish 8180:8080 --name fortify-ssc --volume fortify_ssc_home:/home/microfocus/.fortify --volume fortify_ssc_logs:/tools/fortify/tomcat/logs --volume fortify_ssc_search_index:/tools/fortify/search-index --network=fortify-network --ip=172.50.0.12 --add-host=fortify-mysql:172.50.0.10 --add-host=scancentral-sast:172.50.0.13 --add-host=srv-fortify-linux:172.50.0.1 pedrogarciamf/fortify-ssc:latest
+docker run --detach --hostname fortify-ssc --publish 8180:8080 --name fortify-ssc --volume fortify_ssc_home:/home/microfocus/.fortify --volume fortify_ssc_logs:/tools/fortify/tomcat/logs --volume fortify_ssc_search_index:/tools/fortify/search-index --network=fortify-network --ip=172.50.0.12 --add-host=fortify-mysql:172.50.0.10 --add-host=scancentral-sast:172.50.0.13  pedrogarciamf/fortify-ssc:latest
 
 sleep 120
 
