@@ -39,6 +39,6 @@ if [ ! -f "/opt/fortify/scancentral-ctrl.properties" ]; then
 fi
 
 echo "*** Starting fortify-scancentral-sast ***"
-docker run --detach --hostname scancentral-sast --publish 8280:8080 --name fortify-scancentral-sast --mount type=bind,src=/opt/fortify/scancentral-ctrl.properties,dst=/tools/fortify/sca/config.properties --volume scancentral_sast_home:/home/microfocus/.fortify --volume scancentral_sast_logs:/tools/fortify/tomcat/logs --network=fortify-network --ip=172.50.0.13 --add-host=fortify-ssc:172.50.0.12  pedrogarciamf/fortify-scancentral-sast:latest
+docker run --detach --hostname scancentral-sast --publish 8280:8080 --name fortify-scancentral-sast --mount type=bind,src=/opt/fortify/scancentral-ctrl.properties,dst=/tools/fortify/tomcat/webapps/scancentral-ctrl/WEB-INF/classes/config.properties --volume scancentral_sast_home:/home/microfocus/.fortify --volume scancentral_sast_logs:/tools/fortify/tomcat/logs --network=fortify-network --ip=172.50.0.13 --add-host=fortify-ssc:172.50.0.12  pedrogarciamf/fortify-scancentral-sast:latest
 
 echo "*** Done!!! ***"
