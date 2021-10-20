@@ -7,36 +7,17 @@ echo "          "
 echo "Starting"
 echo "          "
 
+chmod a+x *.sh
+
+./install-tools.sh
+
+dos2unix prepare.sh
+
+./prepare.sh
+
 docker volume create portainer_data
 
 docker run --detach --hostname portainer --publish 9000:9000 --name portainer --restart always --volume /var/run/docker.sock:/var/run/docker.sock --volume portainer_data:/data portainer/portainer:latest
-
-if [ ! -f "/opt/fortify/fortify.license" ]; then 
-    mkdir -p /opt/fortify
-    if [ -f "01-fortify-ssc/setup/FortifyInstallers/fortify.license" ]; then 
-        cp 01-fortify-ssc/setup/FortifyInstallers/fortify.license /opt/fortify/
-        if [ ! -f "03-fortify-sca/setup/FortifyInstallers/fortify.license" ]; then 
-            cp 01-fortify-ssc/setup/FortifyInstallers/fortify.license cp 03-fortify-sca/setup/FortifyInstallers/
-        fi
-    else if [ -f "03-fortify-sca/setup/FortifyInstallers/fortify.license" ]; then 
-        cp 03-fortify-sca/setup/FortifyInstallers/fortify.license /opt/fortify/
-        cp 03-fortify-sca/setup/FortifyInstallers/fortify.license 01-fortify-ssc/setup/FortifyInstallers/
-    else
-        echo "***WARNING! A valid license is required at 01-fortify-ssc/setup/FortifyInstallers/fortify.license"
-        touch /opt/fortify/fortify.license
-    fi
-fi 
-
-if [ ! -f "/opt/mysql/config/my.cnf" ]; then 
-    mkdir -p /opt/mysql/config
-    mkdir -p /opt/mysql/data
-    if [ -f "01-fortify-ssc/setup/FortifyInstallers/my.cnf" ]; then 
-        cp 01-fortify-ssc/setup/FortifyInstallers/my.cnf /opt/mysql/config/
-    else
-        echo "***WARNING! MySQL requires additional configuration at /opt/mysql/config/my.cnf"
-        touch /opt/mysql/config/my.cnf
-    fi
-fi
 
 cd 00-fortify-centos8
 
@@ -55,6 +36,8 @@ sleep 60
 
 docker run --detach --hostname mysql-admin --publish 9200:80 --name mysql-admin --env PMA_HOST=fortify-mysql --env PMA_PORT=3306 --env PMA_USER=root --env PMA_PASSWORD=M1cro_F0cus --env PMA_ARBITRARY=0 --env PMA_ABSOLUTE_URI=http://mysql-admin/ --network=fortify-network --ip=172.50.0.11   --add-host=fortify-mysql:172.50.0.10 phpmyadmin/phpmyadmin:latest
 
+sleep 30
+
 ./flatten.sh
 
 cd ../02-fortify-scancentral-sast
@@ -62,12 +45,16 @@ cd ../02-fortify-scancentral-sast
 dos2unix *.sh
 chmod a+x *.sh
 
+sleep 30
+
 ./flatten.sh
 
-cd ../03-fortify-sca
+cd ../03-fortify-sca-linux
 
 dos2unix *.sh
 chmod a+x *.sh
+
+sleep 30
 
 ./flatten.sh
 
@@ -83,13 +70,14 @@ docker images
 
 echo "          "
 echo "Copy Fortify SSC init.token: "
-cat ./01-fortify-ssc/init.token && echo
+cat 01-fortify-ssc/init.token && echo
 
 echo "          "
-echo "***INFO! Cleaning up Docker System"
+#echo "***INFO! Cleaning up Docker System"
 echo "          "
 
-docker system prune -a -f
+#docker system prune -a -f
+#docker system prune
 
 echo "          "
 echo "Finished"

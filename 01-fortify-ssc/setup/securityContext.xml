@@ -1,12 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--suppress SpringSecurityFiltersConfiguredInspection -->
 <beans xmlns="http://www.springframework.org/schema/beans"
-		 xmlns:security="http://www.springframework.org/schema/security"
-		 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-		 xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.3.xsd
-			 http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security-4.2.xsd"
-		 default-init-method="init">
-
+       xmlns:security="http://www.springframework.org/schema/security"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:util="http://www.springframework.org/schema/util"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+            http://www.springframework.org/schema/beans/spring-beans.xsd
+            http://www.springframework.org/schema/security
+            http://www.springframework.org/schema/security/spring-security.xsd
+            http://www.springframework.org/schema/util
+            https://www.springframework.org/schema/util/spring-util.xsd"
+       default-init-method="init">
 
 	<bean id="fmUrlAuthenticationFailureHandler" class="com.fortify.manager.security.auth.FmUrlAuthenticationFailureHandler">
 		<property name="usernameParameter" value="j_username" />
@@ -14,9 +18,7 @@
 		<property name="changePasswordUrl" value="/changePassword.jsp" />
 	</bean>
 
-    <bean id="afterLoginEnvironmentInitializer" class="com.fortify.manager.security.auth.AfterLoginEnvironmentInitializer">
-        <property name="usernameParameter" value="j_username" />
-    </bean>
+    <bean id="afterLoginEnvironmentInitializer" class="com.fortify.manager.security.auth.AfterLoginEnvironmentInitializer"/>
 
 	<bean id="authenticationSuccessHandlerDelegate" class="com.fortify.manager.security.auth.AuthenticationSuccessHandlerDelegate">
 		<constructor-arg name="handlers">
@@ -65,11 +67,13 @@
 		<property name="sessionAuthenticationStrategy" ref="concurrentSessionAuthenticationStrategy" />
 	</bean>
 
+    <bean id="authenticationEventPublisher" class="com.fortify.manager.security.FmAuthenticationEventPublisher">
+        <description>Intercept AuthenticationException subclasses and emit configured specializations of AbstractAuthenticationFailureEvent</description>
+    </bean>
+
     <!-- Template intended to be used by all ProviderManager beans - contains Publisher for authentication events -->
     <bean id="authenticationManagerTemplate" abstract="true">
-        <property name="authenticationEventPublisher">
-            <bean class="org.springframework.security.authentication.DefaultAuthenticationEventPublisher"/>
-        </property>
+        <property name="authenticationEventPublisher" ref="authenticationEventPublisher"/>
     </bean>
 
 	<!-- Authentication manager for username+password authentication. Should contain only providers that handle this type of authentication. -->
@@ -78,12 +82,15 @@
 		<constructor-arg>
 			<list>
 				<bean class="com.fortify.manager.web.security.auth.FmKerberosAuthenticationProvider">
+                    <constructor-arg ref="kerberosRuntimeStatus"/>
 					<property name="kerberosClient" ref="sunJaasKerberosClient"/>
 					<property name="userDetailsService" ref="userDetailsServiceDelegate"/>
 				</bean>
 				<bean class="com.fortify.manager.web.security.auth.FmCompositeAuthenticationProvider">
 					<constructor-arg name="ldapService" ref="ldapService"/>
 					<constructor-arg name="lookupStrategy" value="${user.lookup.strategy}"/>
+                    <constructor-arg name="samlRuntimeStatus" ref="samlRuntimeStatus"/>
+                    <constructor-arg name="kerberosRuntimeStatus" ref="kerberosRuntimeStatus"/>
 					<property name="ldapAuthenticationProvider" ref="compositeLdapAuthenticationProvider"/>
 					<property name="daoAuthenticationProvider" ref="fmDaoAuthenticationProvider"/>
 				</bean>
@@ -110,10 +117,8 @@
 
     </bean>
 	<!-- ======================== FILTER CHAIN ======================= -->
+    <util:constant id="authCodeExchangePath" static-field="com.fortify.server.platform.shared.controller.ActionUrl.AUTH_CODE_EXCHANGE"/>
 
-	<!--  if you wish to use channel security, add "channelProcessingFilter," in front
-               of "httpSessionContextIntegrationFilter" in the list below -->
-	<!-- Special handling for file uploads to handle flex's 'special' behavior -->
 	<bean id="filterChainProxy" class="org.springframework.security.web.FilterChainProxy">
 		<security:filter-chain-map request-matcher="ant">
             <security:filter-chain pattern="/fm-ws/services/**"   filters="apiCompositeSessionFilter,ssoCompositeAuthenticationFilter,apiCompositeInterceptorFilter"/>
@@ -121,8 +126,9 @@
             <security:filter-chain pattern="/upload/**"                 filters="fileCompositeSecurityFilter"/>
             <security:filter-chain pattern="/download/**"               filters="fileCompositeSecurityFilter"/>
             <security:filter-chain pattern="/transfer/**"               filters="fileCompositeSecurityFilter"/>
+            <security:filter-chain pattern="/api/scim/**"               filters="anonProcessingFilter"/>
             <security:filter-chain pattern="/api/v?${springfox.documentation.swagger.v2.path}" filters="anonProcessingFilter" />
-            <security:filter-chain pattern="/api/v?/auth/*" filters="apiCompositeSessionFilter,apiBasicAuthFilter,ssoCompositeAuthenticationFilter,apiCompositeInterceptorFilter"/>
+            <security:filter-chain pattern="/api/v?/tokens/#{authCodeExchangePath}" filters="apiCompositeInterceptorFilter"/>
             <!-- .../tokens/** has the same filters as /api/**, but with apiTokenAuthFilter removed to avoid privilege escalation with wrongly defined tokens -->
             <security:filter-chain pattern="/api/v?/tokens/**"          filters="apiCompositeSessionFilter,apiBasicAuthFilter,ssoCompositeAuthenticationFilter,apiCompositeInterceptorFilter"/>
             <security:filter-chain pattern="/api/v?/license/**" 		filters="apiCompositeSessionFilter,apiTokenAuthFilter,apiBasicAuthFilter,ssoCompositeAuthenticationFilter,apiCompositeInterceptorFilter"/>
@@ -154,10 +160,11 @@
 			<!-- keep /login.jsp out of /** filter chain to enable logout for SSO and login screen for local admin in case of SSO -->
 			<security:filter-chain pattern="/login.jsp" filters="anonProcessingFilter" />
             <security:filter-chain pattern="/j_spring_security_check" filters="webUiCompositeSessionFilter,changePasswordFilter,usernamePasswordAuthenticationFilter,webUiCompositeInterceptorFilter"/>
-            <security:filter-chain pattern="/**" filters="webUiCompositeSessionFilter,ssoCompositeAuthenticationFilter,webUiCompositeInterceptorFilter"/>
+            <security:filter-chain pattern="/**" filters="webUiCompositeSessionFilter,wieRedirectFilter,ssoCompositeAuthenticationFilter,webUiCompositeInterceptorFilter"/>
 		</security:filter-chain-map>
 	</bean>
 
+	<bean id="wieRedirectFilter" class="com.fortify.manager.web.filters.WIERedirectFilter"/>
 	<!-- servlet filter -->
 	<bean id="sessionTimeoutFilter" class="com.fortify.manager.web.filters.SessionTimeoutFilter"/>
 
@@ -307,7 +314,7 @@
 
 	<!--  Exception Translation -->
 	<bean id="authenticationEntryPointDelegate" class="com.fortify.manager.security.auth.AuthenticationEntryPointDelegate">
-		<constructor-arg>
+        <constructor-arg index="0">
 			<map>
 				<entry key="saml" value-ref="samlEntryPoint"/>
                 <entry key="spnego" value-ref="spnegoEntryPoint"/>
@@ -316,6 +323,8 @@
 				<entry key="local" value-ref="loginUrlAuthenticationEntryPoint"/>
 			</map>
 		</constructor-arg>
+        <constructor-arg index="1" ref="samlRuntimeStatus"/>
+        <constructor-arg index="2" ref="kerberosRuntimeStatus"/>
 	</bean>
 
 	<bean id="exceptionTranslationFilter" class="org.springframework.security.web.access.ExceptionTranslationFilter">
@@ -417,11 +426,6 @@
                 <entry key="com.fortify.manager.BLL.impl.PvIssueBLLImpl.convertToIssueAuditSpecs" value="Issue"/>
                 <entry key="com.fortify.manager.BLL.impl.PvIssueBLLImpl.getRuleView" value="Issue"/>
                 <entry key="com.fortify.manager.BLL.impl.IssueAuditBLLImpl.getIssueAuditHistory" value="Issue"/>
-                <entry key="com.fortify.manager.BLL.impl.DocumentArtifactBLLImpl.getById" value="DocumentArtifact"/>
-				<entry key="com.fortify.manager.BLL.impl.DocumentArtifactBLLImpl.deleteDocumentArtifacts" value="DocumentArtifact"/>
-				<entry key="com.fortify.manager.BLL.impl.DocumentArtifactBLLImpl.updateFileDocumentArtifact" value="DocumentArtifact"/>
-				<entry key="com.fortify.manager.BLL.impl.DocumentArtifactBLLImpl.updateUrlDocumentArtifact" value="DocumentArtifact"/>
-				<entry key="com.fortify.manager.BLL.impl.DocumentArtifactBLLImpl.getDocArtifactInputStream" value="DocumentArtifact"/>
 				<entry key="com.fortify.manager.BLL.impl.DynamicScanBLLImpl.getById" value="DynamicScan"/>
 				<entry key="com.fortify.manager.BLL.impl.DynamicScanBLLImpl.cancelDynamicScan" value="DynamicScan"/>
 				<entry key="com.fortify.manager.BLL.impl.DynamicScanBLLImpl.getFileAttachment" value="DynamicScan"/>
@@ -438,35 +442,6 @@
 				<entry key="com.fortify.manager.BLL.impl.FPRBLLImpl.getAssociatedArtifactInputStream" value="Artifact"/>
 				<entry key="com.fortify.manager.BLL.impl.ProjectMetaDataBLLImpl.createOrUpdateProjectMetaDataValues" value="ProjectMetaDataValue"/>
                 <entry key="com.fortify.manager.BLL.impl.ProjectMetaDataBLLImpl.getProjectMetaDataValue" value="ProjectMetaDataValue"/>
-				<entry key="com.fortify.manager.BLL.impl.RequirementBLLImpl.signOffRequirementTemplate" value="RequirementTemplateInstance"/>
-				<entry key="com.fortify.manager.BLL.impl.RequirementBLLImpl.forceSignOffRequirementTemplate" value="RequirementTemplateInstance"/>
-				<entry key="com.fortify.manager.BLL.impl.RequirementBLLImpl.rejectRequirementTemplateSignOff" value="RequirementTemplateInstance"/>
-				<entry key="com.fortify.manager.BLL.impl.RequirementBLLImpl.forceRejectRequirementTemplateSignOff" value="RequirementTemplateInstance"/>
-				<entry key="com.fortify.manager.BLL.impl.RequirementBLLImpl.getRequirementTemplateSignOffFprInputStream" value="RequirementTemplateInstance"/>
-				<entry key="com.fortify.manager.BLL.impl.RequirementBLLImpl.signOffRequirement" value="RequirementInstance"/>
-				<entry key="com.fortify.manager.BLL.impl.RequirementBLLImpl.forceSignOffRequirement" value="RequirementInstance"/>
-				<entry key="com.fortify.manager.BLL.impl.RequirementBLLImpl.rejectRequirementSignOff" value="RequirementInstance"/>
-				<entry key="com.fortify.manager.BLL.impl.RequirementBLLImpl.forceRejectRequirementSignOff" value="RequirementInstance"/>
-				<entry key="com.fortify.manager.BLL.impl.RequirementBLLImpl.signOffActivity" value="ActivityInstance"/>
-				<entry key="com.fortify.manager.BLL.impl.RequirementBLLImpl.forceSignOffActivity" value="ActivityInstance"/>
-				<entry key="com.fortify.manager.BLL.impl.RequirementBLLImpl.rejectActivitySignOff" value="ActivityInstance"/>
-				<entry key="com.fortify.manager.BLL.impl.RequirementBLLImpl.forceRejectActivitySignOff" value="ActivityInstance"/>
-				<entry key="com.fortify.manager.BLL.impl.RequirementBLLImpl.rejectActivityEvidence" value="ActivityInstance"/>
-				<entry key="com.fortify.manager.BLL.impl.RequirementBLLImpl.signOffDocumentActivity" value="ActivityInstance"/>
-				<entry key="com.fortify.manager.BLL.impl.RequirementBLLImpl.forceSignOffDocumentActivity" value="ActivityInstance"/>
-				<entry key="com.fortify.manager.BLL.impl.RequirementBLLImpl.signOffTask" value="TaskInstance"/>
-				<entry key="com.fortify.manager.BLL.impl.RequirementBLLImpl.forceSignOffTask" value="TaskInstance"/>
-				<entry key="com.fortify.manager.BLL.impl.RequirementBLLImpl.rejectTaskSignOff" value="TaskInstance"/>
-				<entry key="com.fortify.manager.BLL.impl.RequirementBLLImpl.forceRejectTaskSignOff" value="TaskInstance"/>
-				<entry key="com.fortify.manager.BLL.impl.RequirementBLLImpl.createTaskInstance" value="TaskInstance"/>
-				<entry key="com.fortify.manager.BLL.impl.RequirementBLLImpl.updateTaskInstance" value="TaskInstance"/>
-				<entry key="com.fortify.manager.BLL.impl.RequirementBLLImpl.deleteTaskInstances" value="TaskInstance"/>
-				<entry key="com.fortify.manager.BLL.impl.RequirementBLLImpl.addRequirementTemplateComment" value="RequirementTemplateInstance"/>
-				<entry key="com.fortify.manager.BLL.impl.RequirementBLLImpl.addRequirementComment" value="RequirementInstance"/>
-				<entry key="com.fortify.manager.BLL.impl.RequirementBLLImpl.addActivityComment" value="ActivityInstance"/>
-				<entry key="com.fortify.manager.BLL.impl.RequirementBLLImpl.addTaskComment" value="TaskInstance"/>
-				<entry key="com.fortify.manager.BLL.impl.RequirementBLLImpl.getActivityInstanceById" value="ActivityInstance"/>
-				<entry key="com.fortify.manager.BLL.impl.RequirementBLLImpl.getActivitySignOffFprInputStream" value="ActivityInstance"/>
 				<entry key="com.fortify.manager.BLL.impl.IidMigrationBLLImpl.getById" value="IIDMigration"/>
 				<entry key="com.fortify.manager.BLL.impl.IidMigrationBLLImpl.getMappingsForMigration" value="IIDMigration"/>
 				<!-- entry key="com.fortify.manager.BLL.runtime.impl.RuntimeEventBLLImpl.getRuntimeEventById" value="RuntimeEvent"/ -->
@@ -540,7 +515,8 @@
 				<security:intercept-url pattern="/etc/**" access="PERM_ANONYMOUS"/>
 				<security:intercept-url pattern="/scripts/**" access="PERM_ANONYMOUS, PERM_CHANGEPASSWORD"/>
 				<security:intercept-url pattern="/styles/**" access="PERM_ANONYMOUS, PERM_CHANGEPASSWORD"/>
-				<security:intercept-url pattern="/flex/**" access="PERM_WEBLOGIN"/>
+                <!-- allow old Flex UI deep-links -->
+				<security:intercept-url pattern="/flex/index.jsp" access="PERM_WEBLOGIN"/>
 				<security:intercept-url pattern="/d3srv" access="PERM_ANONYMOUS"/>
 
 				<security:intercept-url pattern="/html/init/**" access="PERM_FORBIDDEN"/>
@@ -560,7 +536,10 @@
 
                 <!-- Uncomment the line below to enable Fortify product download functionality. -->
                 <security:intercept-url pattern="/downloads/**" access="PERM_ANONYMOUS" />
+
+                <security:intercept-url pattern="/api/scim/**" access="PERM_ANONYMOUS"/>
 				<security:intercept-url pattern="/api/v1/localUsers/action/checkPasswordStrength" access="PERM_WEBLOGIN, PERM_CHANGEPASSWORD"/>
+                <security:intercept-url pattern="/api/v1/tokens/#{authCodeExchangePath}" access="PERM_ANONYMOUS"/>
 				<security:intercept-url pattern="/api/**" access="PERM_WEBLOGIN" />
 
 				<!-- Block everything else -->

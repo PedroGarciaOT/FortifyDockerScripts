@@ -1,6 +1,6 @@
 <installerInformation>
-    <versionId>2022</versionId>
-    <version>20.2.2.0003</version>
+    <versionId>2112</versionId>
+    <version>21.1.2.0002</version>
     <platformFileList>
         <platformFile>
             <filename>../../downloads/SCA_Windows_Latest_x64.exe</filename>

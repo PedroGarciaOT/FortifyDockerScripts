@@ -2,7 +2,7 @@
 <beans xmlns="http://www.springframework.org/schema/beans"
 	 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	 xsi:schemaLocation="
-	 http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.2.xsd"
+	 http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd"
 	 default-init-method="init">
 
     <bean id="jaxb2MarshallerContextPaths" class="org.springframework.beans.factory.config.ListFactoryBean">
@@ -12,13 +12,6 @@
 				<value>com.fortify.jaxb.filtertemplate</value>
 			</list>
 		</property>
-	</bean>
-    <bean id="sourceElementRendererProvider"
-			class="com.fortify.ui.model.util.render.source.flex.SourceElementRendererProviderImpl"/>
-	<bean id="sourceFileRenderer" class="com.fortify.ui.model.util.render.source.SourceFileRenderer">
-		<property name="sourceRendererProvider" ref="sourceElementRendererProvider"/>
-		<property name="fileProvider" ref="sourceFileProvider"/>
-		<property name="xrefProvider" ref="xRefProvider"/>
 	</bean>
 
     <!-- Analysis File Parsers -->
@@ -34,19 +27,6 @@
 	<!-- ###################  -->
 	<!--  Event Notification -->
 	<!-- ###################  -->
-
-	<bean id="eventsToActivityEventMapping" class="org.springframework.beans.factory.config.MapFactoryBean">
-		<property name="sourceMap" >
-			<map key-type="com.fortify.manager.service.event.EventType" value-type="com.fortify.manager.DAO.requirement.ActivityEventType">
-				<entry key="AUDIT_PERFORMED" value="CM_Audit"/>
-				<entry key="SCA_RESULT_PROCESSED" value="SCA_Upload"/>
-				<entry key="RUNTIME_RESULT_PROCESSED" value="SecurityScope_Upload"/>
-				<entry key="ARTIFACT_UPLOAD_COMPLETED" value="Analysis_Upload"/>
-				<entry key="EXTERNAL_RESULT_PROCESSED" value="External_Upload"/>
-				<entry key="SOURCE_CODE_UPLOADED" value="Source_Upload"/>
-			</map>
-		</property>
-	</bean>
 
 	<bean name="jmsSource" class="org.springframework.jms.core.JmsTemplate">
 		<property name="connectionFactory" ref="jmsFactory"/>
@@ -81,7 +61,7 @@
 				]]>
 			</value>
 		</property>
-		<property name="maxDaysToLive" value="90"/>
+		<property name="maxDaysToLive" value="999"/>
 		<property name="actionPermitted">
 			<list value-type="java.lang.String">
 				<value>FPRUploadRequest</value>
@@ -109,7 +89,7 @@
 				]]>
 			</value>
 		</property>
-		<property name="maxDaysToLive" value="90"/>
+		<property name="maxDaysToLive" value="999"/>
 		<property name="actionPermitted">
 			<list value-type="java.lang.String">
 				<value>AuditViewRequest</value>
@@ -136,7 +116,7 @@
 				]]>
 			</value>
 		</property>
-		<property name="maxDaysToLive" value="90"/>
+		<property name="maxDaysToLive" value="999"/>
 		<property name="actionPermitted">
 			<list value-type="java.lang.String">
 				<value>FPRDownloadRequest</value>
@@ -248,7 +228,6 @@
 				]]>
 			</value>
 		</property>
-		<!-- <property name="maxDaysToLive" value="90" /> -->
 		<property name="maxDaysToLive" value="999" />
 		<property name="actionPermitted">
 			<list value-type="java.lang.String">
@@ -262,6 +241,8 @@
 				<value>GET=/api/v\d+/cloudmappings/mapByVersion\w+</value>
 				<!-- Needed to check if SSC instance is available -->
 				<value>GET=/api/v\d+/applicationState/?</value>
+				<value>GET=/api/v\d+/projectVersions/\d+</value>
+				<value>POST=/api/v\d+/projectVersions/action/test</value>
 				<!-- cloudCtrlToken permitted actions are required for VSTSExtensionToken -->
 			</list>
 		</property>
@@ -281,7 +262,6 @@
 				]]>
 			</value>
 		</property>
-		<!-- <property name="maxDaysToLive" value="90" /> -->
 		<property name="maxDaysToLive" value="999" />
 		<property name="actionPermitted">
 			<list value-type="java.lang.String">
@@ -295,6 +275,8 @@
 				<value>GET=/api/v\d+/cloudmappings/mapByVersion\w+</value>
 				<!-- Needed to check if SSC instance is available -->
 				<value>GET=/api/v\d+/applicationState/?</value>
+				<value>GET=/api/v\d+/projectVersions/\d+</value>
+				<value>POST=/api/v\d+/projectVersions/action/test</value>
 			</list>
 		</property>
 		<property name="terminalActions">
@@ -362,7 +344,7 @@
 				]]>
 			</value>
 		</property>
-		<property name="maxDaysToLive" value="90"/>
+		<property name="maxDaysToLive" value="999"/>
 		<property name="actionPermitted">
 			<list value-type="java.lang.String">
 				<value>LinkProjectVersionRequest</value>
@@ -445,7 +427,7 @@
 				]]>
 			</value>
 		</property>
-        <property name="maxDaysToLive" value="90" />
+        <property name="maxDaysToLive" value="999" />
         <property name="actionPermitted">
             <list value-type="java.lang.String">
                 <value>SavedReportListRequest</value>
@@ -500,7 +482,7 @@
 				]]>
 			</value>
 		</property>
-		<property name="maxDaysToLive" value="90" />
+		<property name="maxDaysToLive" value="999" />
 		<property name="actionPermitted">
 			<list value-type="java.lang.String">
 				<value>GetSingleUseFPRUploadTokenRequest</value>
@@ -530,8 +512,7 @@
 				]]>
 			</value>
 		</property>
-		<!--<property name="maxDaysToLive" value="365"/>-->
-		<property name="maxDaysToLive" value="999" />
+		<property name="maxDaysToLive" value="999"/>
 		<property name="actionPermitted">
 			<list value-type="java.lang.String">
 				<value>AddProjectRequest</value>
@@ -636,6 +617,8 @@
 				<value>(GET|PUT)=/api/v\d+/projectVersions/\d+/issueViewOptions(/[^/]+)*/?</value>
 				<value>GET=/api/v\d+/variables/?</value>
 				<value>GET=/api/v\d+/projectVersions/\d+/variableHistories(/[^/]+)*/?</value>
+				<value>GET=/api/v\d+/projectVersions/\d+</value>
+				<value>POST=/api/v\d+/projectVersions/action/test</value>
 			</list>
 		</property>
 		<property name="terminalActions">
@@ -654,7 +637,7 @@
 				]]>
 			</value>
 		</property>
-		<property name="maxDaysToLive" value="90"/>
+		<property name="maxDaysToLive" value="999"/>
 		<property name="actionPermitted">
 			<list value-type="java.lang.String">
 				<!--value>UnifiedLoginTokenExtensionRequest</value-->
@@ -772,6 +755,8 @@
 				<value>(GET|PUT)=/api/v\d+/projectVersions/\d+/issueViewOptions(/[^/]+)*/?</value>
 				<value>GET=/api/v\d+/variables/?</value>
 				<value>GET=/api/v\d+/projectVersions/\d+/variableHistories(/[^/]+)*/?</value>
+				<value>GET=/api/v\d+/projectVersions/\d+</value>
+				<value>POST=/api/v\d+/projectVersions/action/test</value>
 			</list>
 		</property>
 		<property name="terminalActions">

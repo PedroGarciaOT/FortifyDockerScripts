@@ -15,27 +15,21 @@ yum remove docker \
                   docker-logrotate \
                   docker-engine
 ```
-3. Update YUM
+3. Update DNF
 ``` 
-yum update -y 
+dnf update -y 
 ```
 4. Set up Docker Repo
 ``` 
-yum install -y yum-utils
-
-yum-config-manager \
-    --add-repo \
-    https://download.docker.com/linux/centos/docker-ce.repo
+dnf config-manager --add-repo=https://download.docker.com/linux/centos/docker-ce.repo
 ```
 5. Install containerd.io
 ``` 
-wget https://download.docker.com/linux/centos/7/x86_64/stable/Packages/containerd.io-1.2.13-3.2.el7.x86_64.rpm
-
-yum localinstall containerd.io-1.2.13-3.2.el7.x86_64.rpm -y
+dnf install containerd.io
 ```
 6. Install Docker CE
 ``` 
-yum install docker-ce docker-ce-cli -y 
+dnf install docker-ce docker-ce-cli -y 
 ```
 7. Enable Docker with systemctl
 ``` 
@@ -45,9 +39,22 @@ systemctl enable docker
 ``` 
 systemctl start docker 
 ```
-9. Create the Fortify Docker Network
+9. Clone this project 
+```
+git clone --depth 1 "https://github.com/PedroGarciaMF/FortifyDockerScripts.git"
+```
+10. Enter the cloned project folder.
+```
+cd FortifyDockerScripts
+```
+11. Create a folder **FortifyInstallers**.
+
+12. Copy the files from the you downloaded from [Software Licenses and Downloads (SLD)](https://sld.microfocus.com/) into the **FortifyInstallers** folder.
+
+13. Run the setup all script to create all the containers
 ``` 
-docker network create --driver=bridge --subnet=172.50.0.0/25 --gateway=172.50.0.1 fortify-network 
+chmod a+x setup-all.sh
+./setup-all.sh
 ```
 
 For more details check [Install Docker Engine on CentOS](https://docs.docker.com/engine/install/centos/)

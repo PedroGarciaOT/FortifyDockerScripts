@@ -1,4 +1,10 @@
 #!/bin/bash
+
+if [ ! -f "/opt/fortify/scancentral-ctrl.properties" ]; then 
+    mkdir -p /opt/fortify/
+    cp setup/config.properties /opt/fortify/scancentral-ctrl.properties
+fi
+
 echo "*** Creating fortify-scancentral-sast:dev ***"
 docker build -t pedrogarciamf/fortify-scancentral-sast:dev .
 
@@ -33,12 +39,9 @@ echo "*** Creating fortify-scancentral-sast volumes ***"
 docker volume create scancentral_sast_home
 docker volume create scancentral_sast_logs
 
-if [ ! -f "/opt/fortify/scancentral-ctrl.properties" ]; then 
-    mkdir -p /opt/fortify/
-    cp setup/config.properties /opt/fortify/scancentral-ctrl.properties
-fi
+#TODO Map ScanCentral Controller data and database configuration to external volumes 
 
 echo "*** Starting fortify-scancentral-sast ***"
-docker run --detach --hostname scancentral-sast --publish 8280:8080 --name fortify-scancentral-sast --mount type=bind,src=/opt/fortify/scancentral-ctrl.properties,dst=/tools/fortify/tomcat/webapps/scancentral-ctrl/WEB-INF/classes/config.properties --volume scancentral_sast_home:/home/microfocus/.fortify --volume scancentral_sast_logs:/tools/fortify/tomcat/logs --network=fortify-network --ip=172.50.0.13 --add-host=fortify-ssc:172.50.0.12  pedrogarciamf/fortify-scancentral-sast:latest
+docker run --detach --hostname scancentral-sast --publish 8280:8080 --publish 8243:8443 --name fortify-scancentral-sast --mount type=bind,src=/opt/fortify/scancentral-ctrl.properties,dst=/tools/fortify/tomcat/webapps/scancentral-ctrl/WEB-INF/classes/config.properties --volume scancentral_sast_home:/home/microfocus/.fortify --volume scancentral_sast_logs:/tools/fortify/tomcat/logs --network=fortify-network --ip=172.50.0.13 --add-host=fortify-ssc:172.50.0.12  pedrogarciamf/fortify-scancentral-sast:latest
 
 echo "*** Done!!! ***"

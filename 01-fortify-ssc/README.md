@@ -8,14 +8,14 @@ In addition, the update site is configured to support:
 Before you start.
 Add all the files that will be used to create this image to the folder setup/FortifyInstallers.
 Files like:
-- Fortify_XXXX.zip
-- ojdbc8.jar - In case you are planning on using Oracle Database
+- Fortify_XX.X.X.zip
+
 Optionally you can add the following files to be add to the SSC Downloads folder - http://srv-fortify-linux:8180/ssc/downloads .
-- Fortify_ScanCentral_Client_XXXX_x64.zip
-- Fortify_SourceAndLibScanner_XXXX_x64.zip
-- WebInspect_64_XXXX.zip
-- WebInspectAgent_XXXX.zip
-- SecurityToolkit_XXXX.zip
+- Fortify_ScanCentral_Client_XX.X.X_x64.zip
+- Fortify_SourceAndLibScanner_XX.X.X_x64.zip
+- WebInspect_64_XX.X.zip
+- WebInspectAgent_XX.X.zip
+- SecurityToolkit_XX.X.zip
 
 After starting the container for the first time copy the init.token using 
 ``` 
@@ -36,4 +36,4 @@ jdbc:mysql://fortify-mysql:3306/ssc?sessionVariables=collation_connection=latin1
 
 In case you are planning to use several instances or in case you want to save disk space I recommend flattening the container into a new image. 
 
-In order to use this in a production environment, the SSL configuration has to be added.
+In order to use this in a production environment, the SSL configuration should be added to the Tomcat Server.
