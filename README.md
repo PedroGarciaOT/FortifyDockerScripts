@@ -48,9 +48,9 @@ git clone --depth 1 "https://github.com/PedroGarciaMF/FortifyDockerScripts.git"
 cd FortifyDockerScripts
 ```
 11. Create a folder **FortifyInstallers**.
-´´´
+```
 mkdir -p FortifyInstallers
-´´´ 
+```
 
 12. Copy the files you downloaded from [Software Licenses and Downloads (SLD)](https://sld.microfocus.com/) into the **FortifyInstallers** folder.
 
