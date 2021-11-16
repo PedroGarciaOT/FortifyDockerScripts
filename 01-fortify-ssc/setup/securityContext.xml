@@ -536,6 +536,9 @@
 
                 <!-- Uncomment the line below to enable Fortify product download functionality. -->
                 <security:intercept-url pattern="/downloads/**" access="PERM_ANONYMOUS" />
+				
+				<!-- Enable Authenticated users to download license file -->
+				<security:intercept-url pattern="/get-license/**" access="PERM_WEBLOGIN, PERM_WEBSERVICE_LOGIN"/>
 
                 <security:intercept-url pattern="/api/scim/**" access="PERM_ANONYMOUS"/>
 				<security:intercept-url pattern="/api/v1/localUsers/action/checkPasswordStrength" access="PERM_WEBLOGIN, PERM_CHANGEPASSWORD"/>

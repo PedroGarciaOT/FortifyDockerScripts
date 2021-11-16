@@ -59,6 +59,9 @@ function install {
     echo "*** Customizing SSC - Downloads " 
     mv downloads.jsp ${CATALINA_HOME}/webapps/ssc/downloads/index.jsp
 
+    mkdir -p ${CATALINA_HOME}/webapps/ssc/get-license/
+    mv get-license.jps ${CATALINA_HOME}/webapps/ssc/get-license/index.jsp
+
     # Source And Lib Scanner  
     mv FortifyInstallers/SourceAndLibScanner_Latest_x64.zip ${CATALINA_HOME}/webapps/ssc/downloads/SourceAndLibScanner_Latest_x64.zip
     # SCA Linux 

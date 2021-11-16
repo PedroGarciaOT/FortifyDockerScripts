@@ -11,6 +11,10 @@ For Updates:
 	<li><a href="../update-site/eclipse/security-assistant">Eclipse Security Assistant Update Site</a></li>
 	<li><a href="../update-site/installers">Audit Workbench Update Site</a></li>
 </ul>
+For License File:
+<ul>
+	<li><a href="../get-license">Fortify License File (requires authentication)</a></li>
+</ul>
 For Downloads:
 <ul>
 <% 
