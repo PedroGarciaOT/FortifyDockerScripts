@@ -68,6 +68,17 @@ docker ps -a
 
 docker images
 
+#Starting extras
+#docker pull internetsystemsconsortium/bind9:9.11
+#docker pull registry
+#docker pull nginx
+#nexusiq
+
+mkdir -p /opt/demoenv/
+cp -r extra/demoenv/* /opt/demoenv/ 
+chmod a+x /opt/demoenv/*.sh
+/opt/demoenv/setup.sh
+
 echo "          "
 echo "Copy Fortify SSC init.token: "
 cat 01-fortify-ssc/init.token && echo

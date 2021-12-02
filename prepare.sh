@@ -140,6 +140,8 @@ function install {
         mkdir -p /opt/mysql/data
         if [ -f "01-fortify-ssc/setup/FortifyInstallers/my.cnf" ]; then 
             cp 01-fortify-ssc/setup/FortifyInstallers/my.cnf /opt/mysql/config/
+        elif [ -f "extra/mysql/config/my.cnf" ]; then 
+            cp extra/mysql/config/my.cnf /opt/mysql/config/
         else
             echo "***WARNING! MySQL requires additional configuration at /opt/mysql/config/my.cnf"
             touch /opt/mysql/config/my.cnf
