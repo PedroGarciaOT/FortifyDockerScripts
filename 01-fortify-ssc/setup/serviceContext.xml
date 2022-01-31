@@ -219,39 +219,6 @@
 		</property>
 	</bean>
 
-	<bean id="cloudCtrlToken" class="com.fortify.manager.security.ws.AuthenticationTokenSpec">
-		<property name="key" value="CloudCtrlToken" />
-		<property name="capabilityDescription">
-			<value>
-				<![CDATA[
-				(Deprecated - use ScanCentralCtrlToken instead)
-				]]>
-			</value>
-		</property>
-		<property name="maxDaysToLive" value="999" />
-		<property name="actionPermitted">
-			<list value-type="java.lang.String">
-				<value>FPRUploadRequest</value>
-				<value>GetSingleUseFPRUploadTokenRequest</value>
-				<value>ActiveProjectVersionListRequest</value>
-				<value>ProjectListRequest</value>
-				<value>CloudCtrlUrlRequest</value>
-				<value>CloudOneTimeJobTokenRequest</value>
-				<value>SearchProjectVersionRequest</value>
-				<value>GET=/api/v\d+/cloudmappings/mapByVersion\w+</value>
-				<!-- Needed to check if SSC instance is available -->
-				<value>GET=/api/v\d+/applicationState/?</value>
-				<value>GET=/api/v\d+/projectVersions/\d+</value>
-				<value>POST=/api/v\d+/projectVersions/action/test</value>
-				<!-- cloudCtrlToken permitted actions are required for VSTSExtensionToken -->
-			</list>
-		</property>
-		<property name="terminalActions">
-			<list value-type="java.lang.String">
-			</list>
-		</property>
-	</bean>
-
 	<bean id="scanCentralCtrlToken" class="com.fortify.manager.security.ws.AuthenticationTokenSpec">
 		<property name="key" value="ScanCentralCtrlToken" />
 		<property name="capabilityDescription">
@@ -344,7 +311,7 @@
 				]]>
 			</value>
 		</property>
-		<property name="maxDaysToLive" value="999"/>
+		<property name="maxDaysToLive" value="90"/>
 		<property name="actionPermitted">
 			<list value-type="java.lang.String">
 				<value>LinkProjectVersionRequest</value>
@@ -805,4 +772,5 @@
 			</list>
 		</property>
 	</bean>
+
 </beans>

@@ -20,11 +20,16 @@ echo "*** Environment Variables "
 export TOMCAT_NATIVE_LIBDIR=${CATALINA_HOME}/native-jni-lib
 export LD_LIBRARY_PATH=${LD_LIBRARY_PATH:+$LD_LIBRARY_PATH:}$TOMCAT_NATIVE_LIBDIR
 
-function install { 
+function InstallSSC { 
+    echo "################################################################################"
+    echo "################################################################################"
+    echo "#          "
+    echo "#          Install Fortify SSC " 
+    echo "#          "
+    echo "################################################################################"
+    echo "################################################################################"
+
     DEBUG="true"
-
-    echo "*** Starting Installation " 
-
     # Create folders defined in fortify.sh
     mkdir -p ${FORTIFY_SSC_HOME}/
     mkdir -p $FORTIFY_SSC_SEARCH_INDEX/
@@ -60,7 +65,7 @@ function install {
     mv downloads.jsp ${CATALINA_HOME}/webapps/ssc/downloads/index.jsp
 
     mkdir -p ${CATALINA_HOME}/webapps/ssc/get-license/
-    mv get-license.jps ${CATALINA_HOME}/webapps/ssc/get-license/index.jsp
+    mv get-license.jsp ${CATALINA_HOME}/webapps/ssc/get-license/index.jsp
 
     # Source And Lib Scanner  
     mv FortifyInstallers/SourceAndLibScanner_Latest_x64.zip ${CATALINA_HOME}/webapps/ssc/downloads/SourceAndLibScanner_Latest_x64.zip
@@ -82,7 +87,6 @@ function install {
     mv scancentral.properties ${CATALINA_HOME}/webapps/ssc/downloads/Fortify_ScanCentral.properties
 
     mv FortifyInstallers/Fortify_ScanCentral_Client_Latest_x64.zip ${CATALINA_HOME}/webapps/ssc/downloads/Fortify_ScanCentral_Client_Latest_x64.zip
-    mv FortifyInstallers/fortify.license ${CATALINA_HOME}/webapps/ssc/downloads/fortify.license
     mv FortifyInstallers/birt-report-designer.zip ${CATALINA_HOME}/webapps/ssc/downloads/birt-report-designer.zip
     mv FortifyInstallers/Fortify_IntelliJ_Remediation_Plugin_Latest.zip ${CATALINA_HOME}/webapps/ssc/downloads/Fortify_IntelliJ_Remediation_Plugin_Latest.zip
 
@@ -173,9 +177,14 @@ function install {
     
     echo "*** Removing unnecessary content "  
     yum clean all
-
-    echo "*** Finalizing installation " 
+    echo "################################################################################"
+    echo "################################################################################"
+    echo "#          "
+    echo "#          Finalizing Fortify SSC " 
+    echo "#          "
+    echo "################################################################################"
+    echo "################################################################################"    
 }
 
-install > ./install-ssc.log
+InstallSSC > ./install-ssc.log
 

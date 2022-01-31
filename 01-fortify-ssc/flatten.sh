@@ -48,7 +48,7 @@ docker cp fortify-ssc:/tools/fortify/sql .
 echo "*** Copying init.token ***"
 docker cp fortify-ssc:/home/microfocus/.fortify/ssc/init.token .
 
-echo "*** Displaying init.token ***"
+echo "*** Displaying SSC init.token ***"
 cat init.token && echo
 
 echo "*** Done!!! ***"

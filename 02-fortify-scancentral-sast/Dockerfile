@@ -6,7 +6,7 @@ WORKDIR /setup
 
 RUN chmod a+x *.sh
 
-ENV FORTIFY_SCANCENTRAL_MAJOR=21.1.0 \
+ENV FORTIFY_SCANCENTRAL_MAJOR=21.2.3 \
     JAVA_MAJOR=11 \
     FORTIFY_SCANCENTRAL_HOME=/tools/fortify \
     CATALINA_HOME=/tools/fortify/tomcat \

@@ -15,7 +15,15 @@ echo "*** Customizing profile.d "
 mv fortify.sh /etc/profile.d/
 source /etc/profile.d/fortify.sh
 
-function install { 
+function InstallSCA { 
+    echo "################################################################################"
+    echo "################################################################################"
+    echo "#          "
+    echo "#          Install Fortify SCA Linux as ScanCentral Sensor " 
+    echo "#          "
+    echo "################################################################################"
+    echo "################################################################################"
+
     DEBUG="true"
     DOWNLOAD_SCA_OPTIONS="false"
     DOWNLOAD_FORTIFY_LICESE="false"
@@ -80,7 +88,13 @@ function install {
     echo "*** Removing unnecessary content "  
     yum clean all
 
-    echo "*** Finalizing installation " 
+    echo "################################################################################"
+    echo "################################################################################"
+    echo "#          "
+    echo "#          Finalizing Fortify SCA Linux " 
+    echo "#          "
+    echo "################################################################################"
+    echo "################################################################################"
 }
 
-install > ./install-sca-linux.log
+InstallSCA > ./install-sca-linux.log

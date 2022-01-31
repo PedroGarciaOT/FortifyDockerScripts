@@ -1,15 +1,18 @@
 #!/bin/bash
 
-yum -y update 
-yum -y install epel-release 
-yum -y install yum-utils 
-#yum -y install sudo 
-yum -y install unzip 
-yum -y install zip 
-yum -y install vim-enhanced 
-#yum -y install apr-devel 
-#yum -y install openssl-devel 
-#yum -y install make 
-yum -y install dos2unix 
-yum -y install wget 
-#yum -y groupinstall "Development Tools"
+dnf update -y
+dnf install epel-release -y
+dnf install dnf-utils -y
+dnf install unzip -y
+dnf install zip -y
+dnf install vim-enhanced -y
+dnf install dos2unix -y 
+dnf install wget -y
+dnf install curl -y
+dnf install python3 -y
+dnf install gcc -y
+#dnf install sudo -y
+#dnf install apr-devel -y
+#dnf install openssl-devel -y
+#dnf install make -y
+#dnf groupinstall "Development Tools"

@@ -20,7 +20,15 @@ echo "*** Environment Variables "
 export TOMCAT_NATIVE_LIBDIR=${CATALINA_HOME}/native-jni-lib
 export LD_LIBRARY_PATH=${LD_LIBRARY_PATH:+$LD_LIBRARY_PATH:}$TOMCAT_NATIVE_LIBDIR
 
-function install { 
+function InstallSCSAST { 
+    echo "################################################################################"
+    echo "################################################################################"
+    echo "#          "
+    echo "#          Intall Fortify ScanCentral SAST " 
+    echo "#          "
+    echo "################################################################################"
+    echo "################################################################################"
+
     DEBUG="true"
 
     mkdir -p ${FORTIFY_SCANCENTRAL_HOME}/
@@ -39,6 +47,11 @@ function install {
     mv ${CATALINA_HOME}/webapps/scancentral-ctrl/WEB-INF/classes/config.properties ${CATALINA_HOME}/webapps/scancentral-ctrl/WEB-INF/classes/config.bkp
 
     mv config.properties ${CATALINA_HOME}/webapps/scancentral-ctrl/WEB-INF/classes/config.properties
+
+    mv config.properties ${CATALINA_HOME}/webapps/scancentral-ctrl/
+
+    #mv ${CATALINA_HOME}/webapps/scancentral-ctrl/index.html ${CATALINA_HOME}/webapps/scancentral-ctrl/about.html
+    #mv index.html ${CATALINA_HOME}/webapps/scancentral-ctrl/index.html
 
     mv setenv.sh ${CATALINA_HOME}/bin
 
@@ -71,7 +84,13 @@ function install {
     echo "*** Removing unnecessary content "  
     yum clean all
 
-    echo "*** Finalizing installation " 
+    echo "################################################################################"
+    echo "################################################################################"
+    echo "#          "
+    echo "#          Finalizing Fortify ScanCentral SAST " 
+    echo "#          "
+    echo "################################################################################"
+    echo "################################################################################"
 }
 
-install > ./install-scancentral-sast.log
+InstallSCSAST > ./install-scancentral-sast.log

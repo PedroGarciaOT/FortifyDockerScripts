@@ -1,0 +1,28 @@
+appProperties:
+# Include any property found in <fortify.home>/<app_context >/conf/app.properties.
+# For example, host.url: 'http://ssc.example.org:8888/ssc'
+# searchIndex.location: '/home/ssc/search_index'
+# host.validation: false
+datasourceProperties:
+# Include any property found in <fortify.home>/<app_context>/conf/datasource.properties.
+# For example:
+# db.username: ssc_db_admin_username
+# db.password: ssc_db_admin_password
+   # MSSQL database
+# jdbc.url: 'jdbc:sqlserver://mssql-host:1433;database=ssc_db;sendStringParametersAsUnicode=false'
+    # MySQL database
+# jdbc.url: 'jdbc:mysql://mysql-host:3306/ssc_db? sessionVariables=collation_connection=latin1_general_cs&rewriteBatchedStatements=true'
+    # Oracle database
+# jdbc.url: 'jdbc:oracle:thin:oracle-host:1521:ssc_db'
+ dbMigrationProperties:
+# Enable automatic database migration
+migration.enabled: true
+# Optionally specify alternative migration credentials
+# migration.username: ssc_db_admin_username
+# migration.password: ssc_db_admin_password
+seeds:
+# modify the path to the appropriate location for your environment 
+- '/home/ssc/bundles/Fortify_Process_Seed_Bundle-2021_Q4_0001.zip'
+- '/home/ssc/bundles/Fortify_PCI_Basic_Seed_Bundle-2021_Q4_0001.zip'
+- '/home/ssc/bundles/Fortify_PCI_SSF_Basic_Seed_Bundle-2021_Q4_0001.zip'
+- '/home/ssc/bundles/Fortify_Report_Seed_Bundle-2021_Q4_0001.zip'

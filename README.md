@@ -4,6 +4,7 @@ My Fortify Docker Scripts for SSC, SCA and ScanCentral SAST.
 In order to setup a demo/test environment you may follow the steps below
 
 1. Create a new CentOS VM
+For more details check [CentOS Documentation](https://docs.centos.org/)
 2. Remove any existing trace of docker
 ``` 
 yum remove docker \
@@ -15,46 +16,42 @@ yum remove docker \
                   docker-logrotate \
                   docker-engine
 ```
-3. Update DNF
-``` 
-dnf update -y 
-```
-4. Set up Docker Repo
+3. Set up Docker Repo
 ``` 
 dnf config-manager --add-repo=https://download.docker.com/linux/centos/docker-ce.repo
 ```
-5. Install containerd.io
+4. Update DNF
 ``` 
-dnf install containerd.io
+dnf update -y 
 ```
-6. Install Docker CE
+5. Install Docker CE
 ``` 
-dnf install docker-ce docker-ce-cli -y 
+dnf install docker-ce docker-ce-cli containerd.io -y 
 ```
-7. Enable Docker with systemctl
+6. Enable Docker with systemctl
 ``` 
 systemctl enable docker 
 ```
-8. Start Docker with systemctl
+7. Start Docker with systemctl
 ``` 
 systemctl start docker 
 ```
-9. Clone this project 
+8. Clone this project 
 ```
 git clone --depth 1 "https://github.com/PedroGarciaMF/FortifyDockerScripts.git"
 ```
-10. Enter the cloned project folder.
+9. Enter the cloned project folder.
 ```
 cd FortifyDockerScripts
 ```
-11. Create a folder **FortifyInstallers**.
+10. Create a folder **FortifyInstallers**.
 ```
 mkdir -p FortifyInstallers
 ```
 
-12. Copy the files you downloaded from [Software Licenses and Downloads (SLD)](https://sld.microfocus.com/) into the **FortifyInstallers** folder.
+11. Copy the files you downloaded from [Software Licenses and Downloads (SLD)](https://sld.microfocus.com/) into the **FortifyInstallers** folder.
 
-13. Run the setup all script to create all the containers
+12. Run the setup all script to create all the containers
 ``` 
 chmod a+x setup-all.sh
 ./setup-all.sh

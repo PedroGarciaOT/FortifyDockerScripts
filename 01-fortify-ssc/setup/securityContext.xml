@@ -265,9 +265,7 @@
     <bean id="abstractApiBasicAuthFilter" abstract="true" class="com.fortify.manager.web.security.auth.FmApiBasicAuthenticationFilter">
         <constructor-arg index="0" ref="usernamePasswordAuthenticationManager" />
         <constructor-arg index="1">
-            <bean class="com.fortify.manager.web.security.auth.FmApiBasicAuthenticationEntryPoint">
-                <constructor-arg value="fortify:ssc:api"/>
-            </bean>
+            <bean class="com.fortify.manager.web.security.auth.FmApiBasicAuthenticationEntryPoint" />
         </constructor-arg>
     </bean>
     <bean id="apiBasicAuthFilter" parent="abstractApiBasicAuthFilter">
