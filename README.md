@@ -22,10 +22,10 @@ mkdir -p FortifyInstallers
 
 6. Update prepare.sh.
 
-7. Run the setup all script to create all the containers
+7. Run the setup-linux script to create all linux containers
 ``` 
-chmod a+x setup-all.sh
-./setup-all.sh
+chmod a+x setup-linux.sh
+./setup-linux.sh
 ```
 
 For more details check [Install Docker Engine on CentOS](https://docs.docker.com/engine/install/centos/)

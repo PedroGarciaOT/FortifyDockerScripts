@@ -1,0 +1,27 @@
+version: "3"
+services: 
+    scancentral-dast-utilityservice:
+        image: "fortifydocker/webinspect:21.2.74"
+        container_name: "scancentral-dast-utilityservice"
+        ports: 
+            - "82:5000"
+        restart: always
+        environment:
+            - "ConnectionStrings:DASTDB=H7ExeljHHr+2KWode2f60FgbD0EssfcmKMo8waaQkHpv3yXFrjARsdibDrdMHKcIZfj3Myo7hwKclnaOo8HLJZ0cwBzuywHEN1SeJ4goYbLdIY6Lfg7CWw=="
+            - "Mode=4"
+
+    scancentral-dast-api:
+        image: "fortifydocker/scancentral-dast-api:21.2"
+        ports: 
+            - "81:80"
+        restart: always
+        environment:
+            - "ConnectionStrings:DASTDB=H7ExeljHHr+2KWode2f60FgbD0EssfcmKMo8waaQkHpv3yXFrjARsdibDrdMHKcIZfj3Myo7hwKclnaOo8HLJZ0cwBzuywHEN1SeJ4goYbLdIY6Lfg7CWw=="
+
+    scancentral-dast-globalservice:
+        image: "fortifydocker/scancentral-dast-globalservice:21.2"
+        depends_on: 
+            - scancentral-dast-api
+        restart: always
+        environment: 
+            - "ConnectionStrings:DASTDB=H7ExeljHHr+2KWode2f60FgbD0EssfcmKMo8waaQkHpv3yXFrjARsdibDrdMHKcIZfj3Myo7hwKclnaOo8HLJZ0cwBzuywHEN1SeJ4goYbLdIY6Lfg7CWw=="
