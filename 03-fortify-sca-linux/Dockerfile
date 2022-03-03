@@ -6,7 +6,7 @@ WORKDIR /setup
 
 RUN chmod a+x *.sh
 
-ENV FORTIFY_SCA_MAJOR=21.2.2 \
+ENV FORTIFY_SCA_MAJOR=21.2.3 \
     FORTIFY_SSC_URL=http://fortify-ssc:8080/ssc \
     FORTIFY_SCANCENTRAL_URL=http://scancentral-sast:8080/scancentral-ctrl \
     FORTIFY_SCA_HOME=/tools/fortify/sca 
@@ -25,7 +25,7 @@ RUN rm -rf /setup
 
 USER microfocus
 
-VOLUME "/home/microfocus/.fortify" "/ScanCentralWorkdir" 
+VOLUME "/ScanCentralWorkdir" 
 
 CMD ["startsensor"]
 
