@@ -1,0 +1,4 @@
+echo "Starting Fortify ScanCentral Sensor"
+echo "FORTIFY_SCA_HOME='%FORTIFY_SCA_HOME%'"
+echo "FORTIFY_SCANCENTRAL_URL='%FORTIFY_SCANCENTRAL_URL%'"
+%FORTIFY_SCA_HOME%/bin/scancentral -url %FORTIFY_SCANCENTRAL_URL% worker

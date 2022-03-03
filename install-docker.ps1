@@ -20,4 +20,4 @@ function InstallDocker {
     Restart-Computer -Force
 }
 
-InstallDocker >> .\InstallFortify.log -Append
+InstallDocker >> .\InstallFortify.log

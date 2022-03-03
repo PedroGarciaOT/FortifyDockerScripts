@@ -1,0 +1,6 @@
+unattendedmodeui=none
+fortify_license_path=fortify.license
+installdir=C:\Tools\Fortify\SCA
+UpdateServer=http://fortify-ssc:8080/ssc
+MigrateSCA=0
+InstallSamples=1
