@@ -4,7 +4,7 @@ echo "Stopping DemoEnv"
 
 docker stop fortify-jenkins
 
-docker stop fortify-sca-8g
+docker stop fortify-sca-linux-8g
 
 docker stop fortify-scancentral-sast
 

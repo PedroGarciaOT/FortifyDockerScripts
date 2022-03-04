@@ -13,7 +13,7 @@ docker start fortify-scancentral-sast
 
 sleep 10
 
-docker start fortify-sca-8g
+docker start fortify-sca-linux-8g
 
 docker start fortify-jenkins
 
