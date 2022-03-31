@@ -12,6 +12,8 @@ function PrepareInstall {
     FORTIFY_SCANCENTRAL_MAJOR=21.2.3
     FORTIFY_SCA_MAJOR=21.2.3
     FORTIFY_SCA_PLUGINS_MAJOR=21.2.3
+
+    SONATYPE_PARSER_VERSION=20.1.20210519
     
     TOMCAT_MAJOR=9
     TOMCAT_VERSION=9.0.58
@@ -33,6 +35,10 @@ function PrepareInstall {
     FILE_WI=WebInspect_64_${WEBINSPECT_MAJOR}.zip
     FILE_SECURITY_TOOLKIT=SecurityToolkit_${WEBINSPECT_MAJOR}.zip
     FILE_RUNTIME_AGENT=WebInspectAgent_${WEBINSPECT_MAJOR}.zip  
+    
+    FILE_SONATYPE_PARSER=SonatypeFortifyBundle-${SONATYPE_PARSER_VERSION}.zip
+    URL_SONATYPE_PARSER=https://github.com/sonatype-nexus-community/iq-fortify-parser/releases/download/SonatypeFortifyBundle-${SONATYPE_PARSER_VERSION}/${FILE_SONATYPE_PARSER}
+    
 
     FILE_SSC_PATCH=Fortify_21.2.2_Server.zip
     FILE_SCANCENTRAL_PATCH=Fortify_ScanCentral_Controller_21.2.3.zip
@@ -60,6 +66,12 @@ function PrepareInstall {
         wget ${URL_BIRT} -P FortifyInstallers/
     fi 
     mv FortifyInstallers/${FILE_BIRT} FortifyInstallers/birt-report-designer.zip
+
+    if [! -f "FortifyInstallers/${FILE_SONATYPE_PARSER}" ]; then 
+        echo "*** Downloading ${FILE_SONATYPE_PARSER} " 
+        wget ${URL_SONATYPE_PARSER} -P FortifyInstallers/
+    fi 
+    mv FortifyInstallers/${FILE_SONATYPE_PARSER} FortifyInstallers/SonatypeFortifyBundle-latest.zip
 
     if [ ! -f "FortifyInstallers/${FILE_TOMCAT}" ]; then
         echo "*** Downloading ${FILE_TOMCAT} " 

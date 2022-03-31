@@ -127,6 +127,13 @@ function InstallFortify {
     echo "Jenkins initialAdminPassword: "
     cat initialAdminPassword && echo
 
+    # Fortify Sonatype Nexus IQ  
+    docker pull sonatype/nexus-iq-server:latest
+    docker pull sonatype/nexus-iq-cli:latest
+    docker volume create --name sonatype-work
+    docker volume create --name sonatype-logs
+    docker run -d -p 8070:8070 -p 8071:8071 --name nexus-iq-server -v sonatype-work:/sonatype-work -v sonatype-logs:/var/log/nexus-iq-server sonatype/nexus-iq-server
+
     #echo "          "
     #echo "***INFO! Cleaning up Docker System"
     #echo "          "

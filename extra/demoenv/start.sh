@@ -15,6 +15,8 @@ sleep 10
 
 docker start fortify-sca-linux-8g
 
+docker start nexus-iq-server
+
 docker start fortify-jenkins
 
 #docker start fortify-jenkins-agent
