@@ -1,32 +1,11 @@
-# FortifyDockerScripts
-My Fortify Docker Scripts for SSC, SCA and ScanCentral SAST. 
+# Deprecation Notice
 
-In order to setup a demo/test environment you may follow the steps below
+Helm charts have been moved to Docker Hub. The older charts that used to be hosted in this repository are no longer maintained and have been archived in the `archive` directory. Helm charts are now delivered as part of the Fortify product releases. Please see the following Docker Hub links for current Helm charts:
 
-1. Create a new CentOS VM
-For more details check [CentOS Documentation](https://docs.centos.org/)
-2. Clone this project 
-```
-git clone --depth 1 "https://github.com/PedroGarciaMF/FortifyDockerScripts.git"
-```
-3. Enter the cloned project folder.
-```
-cd FortifyDockerScripts
-```
-4. Create and enter **FortifyInstallers** folder.
-```
-mkdir -p FortifyInstallers
-```
+- [SSC](https://hub.docker.com/repository/docker/fortifydocker/helm-ssc)
+- [ScanCentral SAST](https://hub.docker.com/repository/docker/fortifydocker/helm-scancentral-sast)
+- [LIM](https://hub.docker.com/repository/docker/fortifydocker/helm-lim)
+- [ScanCentral DAST Core Components](https://hub.docker.com/repository/docker/fortifydocker/helm-scancentral-dast-core)
+- [ScanCentral DAST Scanner](https://hub.docker.com/repository/docker/fortifydocker/helm-scancentral-dast-scanner)
 
-5. Download the latest installers and patches from [Software Licenses and Downloads (SLD)](https://sld.microfocus.com/).
-
-6. Update prepare.sh.
-
-7. Run the setup-linux script to create all linux containers
-``` 
-chmod a+x setup-linux.sh
-./setup-linux.sh
-```
-
-For more details check [Install Docker Engine on CentOS](https://docs.docker.com/engine/install/centos/)
-
+Documentation for these charts for 24.4.0 and beyond will be found in the product documentation.
